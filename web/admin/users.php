@@ -131,20 +131,21 @@ try {
                                     </div>
                                 </td>
                                 <td class="text-end">
-                                    <div class="dropdown">
-                                        <button class="btn btn-sm btn-secondary-custom dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <a href="user_profile.php?id=<?= $user['id'] ?>" class="btn btn-sm btn-secondary-custom me-1"><i class="bi bi-eye me-1"></i>View Profile</a>
+                                    <div class="dropdown d-inline-block">
+                                        <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
                                             Manage Access
                                         </button>
-                                        <ul class="dropdown-menu dropdown-menu-dark border-secondary border-opacity-15 bg-dark">
+                                        <ul class="dropdown-menu dropdown-menu-end border-light-subtle shadow-sm bg-white">
                                             <li>
-                                                <a class="dropdown-item fs-14 py-2" href="users.php?action=toggle_premium&id=<?= $user['id'] ?>">
-                                                    <i class="bi <?= $user['is_premium'] == 1 ? 'bi-star' : 'bi-star-fill text-warning' ?> me-2"></i>
+                                                <a class="dropdown-item fs-14 py-2 text-dark" href="users.php?action=toggle_premium&id=<?= $user['id'] ?>">
+                                                    <i class="bi <?= $user['is_premium'] == 1 ? 'bi-star text-secondary' : 'bi-star-fill text-warning' ?> me-2"></i>
                                                     <?= $user['is_premium'] == 1 ? 'Downgrade to Free' : 'Grant Premium PRO' ?>
                                                 </a>
                                             </li>
                                             <li>
-                                                <a class="dropdown-item fs-14 py-2" href="users.php?action=toggle_admin&id=<?= $user['id'] ?>">
-                                                    <i class="bi <?= $user['is_admin'] == 1 ? 'bi-shield-slash' : 'bi-shield-fill text-teal' ?> me-2"></i>
+                                                <a class="dropdown-item fs-14 py-2 text-dark" href="users.php?action=toggle_admin&id=<?= $user['id'] ?>">
+                                                    <i class="bi <?= $user['is_admin'] == 1 ? 'bi-shield-slash text-secondary' : 'bi-shield-fill text-teal' ?> me-2"></i>
                                                     <?= $user['is_admin'] == 1 ? 'Revoke Admin role' : 'Make Administrator' ?>
                                                 </a>
                                             </li>
