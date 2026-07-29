@@ -20,12 +20,36 @@ if (!isset($_FILES['image']) || $_FILES['image']['error'] !== UPLOAD_ERR_OK) {
 $fileTmpPath = $_FILES['image']['tmp_name'];
 $fileName = $_FILES['image']['name'];
 $fileSize = $_FILES['image']['size'];
-$fileType = $_FILES['image']['type'];
+
+// Detect MIME type securely on the server
+$fileType = null;
+if (function_exists('finfo_open')) {
+    $finfo = finfo_open(FILEINFO_MIME_TYPE);
+    $fileType = finfo_file($finfo, $fileTmpPath);
+    finfo_close($finfo);
+} elseif (function_exists('mime_content_type')) {
+    $fileType = mime_content_type($fileTmpPath);
+}
+
+// Fallback to client-provided type or extension check if server detection fails
+if (!$fileType || $fileType === 'application/octet-stream') {
+    $fileType = $_FILES['image']['type'] ?? '';
+    
+    // Check extension as final fallback
+    $ext = strtolower(pathinfo($fileName, PATHINFO_EXTENSION));
+    if ($ext === 'jpg' || $ext === 'jpeg') {
+        $fileType = 'image/jpeg';
+    } elseif ($ext === 'png') {
+        $fileType = 'image/png';
+    } elseif ($ext === 'webp') {
+        $fileType = 'image/webp';
+    }
+}
 
 // Validate allowed image types
 $allowedMimeTypes = ['image/jpeg', 'image/png', 'image/webp'];
 if (!in_array($fileType, $allowedMimeTypes)) {
-    sendError('Invalid image format. Allowed formats: JPEG, PNG, WEBP.');
+    sendError('Invalid image format. Allowed formats: JPEG, PNG, WEBP. Detected: ' . htmlspecialchars($fileType));
 }
 
 // Limit image upload size (e.g. 5MB maximum for Gemini vision inputs)
