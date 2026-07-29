@@ -104,7 +104,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                         style: theme.textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.bold),
                       ),
                       Text(
-                        profile.dietPreference,
+                        profile.dietPreference ?? 'Strict Vegan',
                         style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.bold, fontSize: 13),
                       ),
                     ],
