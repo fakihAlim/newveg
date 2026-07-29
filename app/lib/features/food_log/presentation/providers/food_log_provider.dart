@@ -7,6 +7,7 @@ import 'package:intl/intl.dart';
 import '../../../../core/database/app_database.dart';
 import '../../../../core/database/database_provider.dart';
 import '../../../../core/services/gemini_vision_service.dart';
+import 'package:newveg/features/food_log/data/food_analysis_service.dart';
 import 'food_log_state.dart';
 
 // ---------------------------------------------------------------------------
@@ -28,9 +29,9 @@ const int kNonCompliantPoints = -20;
 
 class FoodLogNotifier extends StateNotifier<FoodLogState> {
   final AppDatabase _db;
-  final GeminiVisionService _gemini;
+  final FoodAnalysisService _analysisService;
 
-  FoodLogNotifier(this._db, this._gemini) : super(const FoodLogState());
+  FoodLogNotifier(this._db, this._analysisService) : super(const FoodLogState());
 
   void setImage(File image) {
     state = state.copyWith(
@@ -48,7 +49,7 @@ class FoodLogNotifier extends StateNotifier<FoodLogState> {
     state = state.copyWith(mealType: mealType, clearError: true);
   }
 
-  /// Sends the selected image to Gemini for nutritional analysis.
+  /// Sends the selected image to the remote backend for nutritional analysis.
   ///
   /// Enforces the daily scan limit for free-tier users before making the API call.
   Future<void> analyzeFood() async {
@@ -71,10 +72,10 @@ class FoodLogNotifier extends StateNotifier<FoodLogState> {
         );
       }
 
-      // Call Gemini API
-      final result = await _gemini.analyzeFood(
+      // Call Rotated API key remote analysis endpoint
+      final result = await _analysisService.uploadAndAnalyze(
         imageFile: state.imageFile!,
-        dietPreference: profile.dietPreference ?? 'Vegan',
+        authToken: profile.authToken,
       );
 
       // Increment scan counter
@@ -140,21 +141,17 @@ class FoodLogNotifier extends StateNotifier<FoodLogState> {
   }
 }
 
-// ---------------------------------------------------------------------------
-// Providers
-// ---------------------------------------------------------------------------
-
-/// Singleton Gemini Vision service provider.
-final geminiVisionServiceProvider = Provider<GeminiVisionService>((ref) {
-  return GeminiVisionService();
+/// Remote food analysis upload service provider.
+final foodAnalysisServiceProvider = Provider<FoodAnalysisService>((ref) {
+  return FoodAnalysisService();
 });
 
 /// Provider for the food log flow state and actions.
 final foodLogProvider =
     StateNotifierProvider<FoodLogNotifier, FoodLogState>((ref) {
   final db = ref.watch(databaseProvider);
-  final gemini = ref.watch(geminiVisionServiceProvider);
-  return FoodLogNotifier(db, gemini);
+  final analysisService = ref.watch(foodAnalysisServiceProvider);
+  return FoodLogNotifier(db, analysisService);
 });
 
 /// Provider that fetches today's food logs from the database.
