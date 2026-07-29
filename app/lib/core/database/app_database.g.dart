@@ -22,45 +22,72 @@ class $UserProfilesTable extends UserProfiles
       'PRIMARY KEY AUTOINCREMENT',
     ),
   );
+  static const VerificationMeta _emailMeta = const VerificationMeta('email');
+  @override
+  late final GeneratedColumn<String> email = GeneratedColumn<String>(
+    'email',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _fullNameMeta = const VerificationMeta(
+    'fullName',
+  );
+  @override
+  late final GeneratedColumn<String> fullName = GeneratedColumn<String>(
+    'full_name',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _authTokenMeta = const VerificationMeta(
+    'authToken',
+  );
+  @override
+  late final GeneratedColumn<String> authToken = GeneratedColumn<String>(
+    'auth_token',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   static const VerificationMeta _genderMeta = const VerificationMeta('gender');
   @override
   late final GeneratedColumn<String> gender = GeneratedColumn<String>(
     'gender',
     aliasedName,
-    false,
-    additionalChecks: GeneratedColumn.checkTextLength(
-      minTextLength: 1,
-      maxTextLength: 10,
-    ),
+    true,
     type: DriftSqlType.string,
-    requiredDuringInsert: true,
+    requiredDuringInsert: false,
   );
   static const VerificationMeta _ageMeta = const VerificationMeta('age');
   @override
   late final GeneratedColumn<int> age = GeneratedColumn<int>(
     'age',
     aliasedName,
-    false,
+    true,
     type: DriftSqlType.int,
-    requiredDuringInsert: true,
+    requiredDuringInsert: false,
   );
   static const VerificationMeta _heightMeta = const VerificationMeta('height');
   @override
   late final GeneratedColumn<double> height = GeneratedColumn<double>(
     'height',
     aliasedName,
-    false,
+    true,
     type: DriftSqlType.double,
-    requiredDuringInsert: true,
+    requiredDuringInsert: false,
   );
   static const VerificationMeta _weightMeta = const VerificationMeta('weight');
   @override
   late final GeneratedColumn<double> weight = GeneratedColumn<double>(
     'weight',
     aliasedName,
-    false,
+    true,
     type: DriftSqlType.double,
-    requiredDuringInsert: true,
+    requiredDuringInsert: false,
   );
   static const VerificationMeta _avatarPathMeta = const VerificationMeta(
     'avatarPath',
@@ -69,13 +96,9 @@ class $UserProfilesTable extends UserProfiles
   late final GeneratedColumn<String> avatarPath = GeneratedColumn<String>(
     'avatar_path',
     aliasedName,
-    false,
-    additionalChecks: GeneratedColumn.checkTextLength(
-      minTextLength: 1,
-      maxTextLength: 100,
-    ),
+    true,
     type: DriftSqlType.string,
-    requiredDuringInsert: true,
+    requiredDuringInsert: false,
   );
   static const VerificationMeta _dietPreferenceMeta = const VerificationMeta(
     'dietPreference',
@@ -84,13 +107,9 @@ class $UserProfilesTable extends UserProfiles
   late final GeneratedColumn<String> dietPreference = GeneratedColumn<String>(
     'diet_preference',
     aliasedName,
-    false,
-    additionalChecks: GeneratedColumn.checkTextLength(
-      minTextLength: 1,
-      maxTextLength: 50,
-    ),
+    true,
     type: DriftSqlType.string,
-    requiredDuringInsert: true,
+    requiredDuringInsert: false,
   );
   static const VerificationMeta _ttmStageMeta = const VerificationMeta(
     'ttmStage',
@@ -99,13 +118,9 @@ class $UserProfilesTable extends UserProfiles
   late final GeneratedColumn<String> ttmStage = GeneratedColumn<String>(
     'ttm_stage',
     aliasedName,
-    false,
-    additionalChecks: GeneratedColumn.checkTextLength(
-      minTextLength: 1,
-      maxTextLength: 50,
-    ),
+    true,
     type: DriftSqlType.string,
-    requiredDuringInsert: true,
+    requiredDuringInsert: false,
   );
   static const VerificationMeta _totalPointsMeta = const VerificationMeta(
     'totalPoints',
@@ -161,6 +176,9 @@ class $UserProfilesTable extends UserProfiles
   @override
   List<GeneratedColumn> get $columns => [
     id,
+    email,
+    fullName,
+    authToken,
     gender,
     age,
     height,
@@ -188,45 +206,53 @@ class $UserProfilesTable extends UserProfiles
     if (data.containsKey('id')) {
       context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
     }
+    if (data.containsKey('email')) {
+      context.handle(
+        _emailMeta,
+        email.isAcceptableOrUnknown(data['email']!, _emailMeta),
+      );
+    }
+    if (data.containsKey('full_name')) {
+      context.handle(
+        _fullNameMeta,
+        fullName.isAcceptableOrUnknown(data['full_name']!, _fullNameMeta),
+      );
+    }
+    if (data.containsKey('auth_token')) {
+      context.handle(
+        _authTokenMeta,
+        authToken.isAcceptableOrUnknown(data['auth_token']!, _authTokenMeta),
+      );
+    }
     if (data.containsKey('gender')) {
       context.handle(
         _genderMeta,
         gender.isAcceptableOrUnknown(data['gender']!, _genderMeta),
       );
-    } else if (isInserting) {
-      context.missing(_genderMeta);
     }
     if (data.containsKey('age')) {
       context.handle(
         _ageMeta,
         age.isAcceptableOrUnknown(data['age']!, _ageMeta),
       );
-    } else if (isInserting) {
-      context.missing(_ageMeta);
     }
     if (data.containsKey('height')) {
       context.handle(
         _heightMeta,
         height.isAcceptableOrUnknown(data['height']!, _heightMeta),
       );
-    } else if (isInserting) {
-      context.missing(_heightMeta);
     }
     if (data.containsKey('weight')) {
       context.handle(
         _weightMeta,
         weight.isAcceptableOrUnknown(data['weight']!, _weightMeta),
       );
-    } else if (isInserting) {
-      context.missing(_weightMeta);
     }
     if (data.containsKey('avatar_path')) {
       context.handle(
         _avatarPathMeta,
         avatarPath.isAcceptableOrUnknown(data['avatar_path']!, _avatarPathMeta),
       );
-    } else if (isInserting) {
-      context.missing(_avatarPathMeta);
     }
     if (data.containsKey('diet_preference')) {
       context.handle(
@@ -236,16 +262,12 @@ class $UserProfilesTable extends UserProfiles
           _dietPreferenceMeta,
         ),
       );
-    } else if (isInserting) {
-      context.missing(_dietPreferenceMeta);
     }
     if (data.containsKey('ttm_stage')) {
       context.handle(
         _ttmStageMeta,
         ttmStage.isAcceptableOrUnknown(data['ttm_stage']!, _ttmStageMeta),
       );
-    } else if (isInserting) {
-      context.missing(_ttmStageMeta);
     }
     if (data.containsKey('total_points')) {
       context.handle(
@@ -293,34 +315,46 @@ class $UserProfilesTable extends UserProfiles
         DriftSqlType.int,
         data['${effectivePrefix}id'],
       )!,
+      email: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}email'],
+      ),
+      fullName: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}full_name'],
+      ),
+      authToken: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}auth_token'],
+      ),
       gender: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}gender'],
-      )!,
+      ),
       age: attachedDatabase.typeMapping.read(
         DriftSqlType.int,
         data['${effectivePrefix}age'],
-      )!,
+      ),
       height: attachedDatabase.typeMapping.read(
         DriftSqlType.double,
         data['${effectivePrefix}height'],
-      )!,
+      ),
       weight: attachedDatabase.typeMapping.read(
         DriftSqlType.double,
         data['${effectivePrefix}weight'],
-      )!,
+      ),
       avatarPath: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}avatar_path'],
-      )!,
+      ),
       dietPreference: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}diet_preference'],
-      )!,
+      ),
       ttmStage: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}ttm_stage'],
-      )!,
+      ),
       totalPoints: attachedDatabase.typeMapping.read(
         DriftSqlType.int,
         data['${effectivePrefix}total_points'],
@@ -348,26 +382,32 @@ class $UserProfilesTable extends UserProfiles
 
 class UserProfile extends DataClass implements Insertable<UserProfile> {
   final int id;
-  final String gender;
-  final int age;
-  final double height;
-  final double weight;
-  final String avatarPath;
-  final String dietPreference;
-  final String ttmStage;
+  final String? email;
+  final String? fullName;
+  final String? authToken;
+  final String? gender;
+  final int? age;
+  final double? height;
+  final double? weight;
+  final String? avatarPath;
+  final String? dietPreference;
+  final String? ttmStage;
   final int totalPoints;
   final bool isPremium;
   final int dailyScanCount;
   final String lastScanDate;
   const UserProfile({
     required this.id,
-    required this.gender,
-    required this.age,
-    required this.height,
-    required this.weight,
-    required this.avatarPath,
-    required this.dietPreference,
-    required this.ttmStage,
+    this.email,
+    this.fullName,
+    this.authToken,
+    this.gender,
+    this.age,
+    this.height,
+    this.weight,
+    this.avatarPath,
+    this.dietPreference,
+    this.ttmStage,
     required this.totalPoints,
     required this.isPremium,
     required this.dailyScanCount,
@@ -377,13 +417,36 @@ class UserProfile extends DataClass implements Insertable<UserProfile> {
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     map['id'] = Variable<int>(id);
-    map['gender'] = Variable<String>(gender);
-    map['age'] = Variable<int>(age);
-    map['height'] = Variable<double>(height);
-    map['weight'] = Variable<double>(weight);
-    map['avatar_path'] = Variable<String>(avatarPath);
-    map['diet_preference'] = Variable<String>(dietPreference);
-    map['ttm_stage'] = Variable<String>(ttmStage);
+    if (!nullToAbsent || email != null) {
+      map['email'] = Variable<String>(email);
+    }
+    if (!nullToAbsent || fullName != null) {
+      map['full_name'] = Variable<String>(fullName);
+    }
+    if (!nullToAbsent || authToken != null) {
+      map['auth_token'] = Variable<String>(authToken);
+    }
+    if (!nullToAbsent || gender != null) {
+      map['gender'] = Variable<String>(gender);
+    }
+    if (!nullToAbsent || age != null) {
+      map['age'] = Variable<int>(age);
+    }
+    if (!nullToAbsent || height != null) {
+      map['height'] = Variable<double>(height);
+    }
+    if (!nullToAbsent || weight != null) {
+      map['weight'] = Variable<double>(weight);
+    }
+    if (!nullToAbsent || avatarPath != null) {
+      map['avatar_path'] = Variable<String>(avatarPath);
+    }
+    if (!nullToAbsent || dietPreference != null) {
+      map['diet_preference'] = Variable<String>(dietPreference);
+    }
+    if (!nullToAbsent || ttmStage != null) {
+      map['ttm_stage'] = Variable<String>(ttmStage);
+    }
     map['total_points'] = Variable<int>(totalPoints);
     map['is_premium'] = Variable<bool>(isPremium);
     map['daily_scan_count'] = Variable<int>(dailyScanCount);
@@ -394,13 +457,34 @@ class UserProfile extends DataClass implements Insertable<UserProfile> {
   UserProfilesCompanion toCompanion(bool nullToAbsent) {
     return UserProfilesCompanion(
       id: Value(id),
-      gender: Value(gender),
-      age: Value(age),
-      height: Value(height),
-      weight: Value(weight),
-      avatarPath: Value(avatarPath),
-      dietPreference: Value(dietPreference),
-      ttmStage: Value(ttmStage),
+      email: email == null && nullToAbsent
+          ? const Value.absent()
+          : Value(email),
+      fullName: fullName == null && nullToAbsent
+          ? const Value.absent()
+          : Value(fullName),
+      authToken: authToken == null && nullToAbsent
+          ? const Value.absent()
+          : Value(authToken),
+      gender: gender == null && nullToAbsent
+          ? const Value.absent()
+          : Value(gender),
+      age: age == null && nullToAbsent ? const Value.absent() : Value(age),
+      height: height == null && nullToAbsent
+          ? const Value.absent()
+          : Value(height),
+      weight: weight == null && nullToAbsent
+          ? const Value.absent()
+          : Value(weight),
+      avatarPath: avatarPath == null && nullToAbsent
+          ? const Value.absent()
+          : Value(avatarPath),
+      dietPreference: dietPreference == null && nullToAbsent
+          ? const Value.absent()
+          : Value(dietPreference),
+      ttmStage: ttmStage == null && nullToAbsent
+          ? const Value.absent()
+          : Value(ttmStage),
       totalPoints: Value(totalPoints),
       isPremium: Value(isPremium),
       dailyScanCount: Value(dailyScanCount),
@@ -415,13 +499,16 @@ class UserProfile extends DataClass implements Insertable<UserProfile> {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return UserProfile(
       id: serializer.fromJson<int>(json['id']),
-      gender: serializer.fromJson<String>(json['gender']),
-      age: serializer.fromJson<int>(json['age']),
-      height: serializer.fromJson<double>(json['height']),
-      weight: serializer.fromJson<double>(json['weight']),
-      avatarPath: serializer.fromJson<String>(json['avatarPath']),
-      dietPreference: serializer.fromJson<String>(json['dietPreference']),
-      ttmStage: serializer.fromJson<String>(json['ttmStage']),
+      email: serializer.fromJson<String?>(json['email']),
+      fullName: serializer.fromJson<String?>(json['fullName']),
+      authToken: serializer.fromJson<String?>(json['authToken']),
+      gender: serializer.fromJson<String?>(json['gender']),
+      age: serializer.fromJson<int?>(json['age']),
+      height: serializer.fromJson<double?>(json['height']),
+      weight: serializer.fromJson<double?>(json['weight']),
+      avatarPath: serializer.fromJson<String?>(json['avatarPath']),
+      dietPreference: serializer.fromJson<String?>(json['dietPreference']),
+      ttmStage: serializer.fromJson<String?>(json['ttmStage']),
       totalPoints: serializer.fromJson<int>(json['totalPoints']),
       isPremium: serializer.fromJson<bool>(json['isPremium']),
       dailyScanCount: serializer.fromJson<int>(json['dailyScanCount']),
@@ -433,13 +520,16 @@ class UserProfile extends DataClass implements Insertable<UserProfile> {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
       'id': serializer.toJson<int>(id),
-      'gender': serializer.toJson<String>(gender),
-      'age': serializer.toJson<int>(age),
-      'height': serializer.toJson<double>(height),
-      'weight': serializer.toJson<double>(weight),
-      'avatarPath': serializer.toJson<String>(avatarPath),
-      'dietPreference': serializer.toJson<String>(dietPreference),
-      'ttmStage': serializer.toJson<String>(ttmStage),
+      'email': serializer.toJson<String?>(email),
+      'fullName': serializer.toJson<String?>(fullName),
+      'authToken': serializer.toJson<String?>(authToken),
+      'gender': serializer.toJson<String?>(gender),
+      'age': serializer.toJson<int?>(age),
+      'height': serializer.toJson<double?>(height),
+      'weight': serializer.toJson<double?>(weight),
+      'avatarPath': serializer.toJson<String?>(avatarPath),
+      'dietPreference': serializer.toJson<String?>(dietPreference),
+      'ttmStage': serializer.toJson<String?>(ttmStage),
       'totalPoints': serializer.toJson<int>(totalPoints),
       'isPremium': serializer.toJson<bool>(isPremium),
       'dailyScanCount': serializer.toJson<int>(dailyScanCount),
@@ -449,26 +539,34 @@ class UserProfile extends DataClass implements Insertable<UserProfile> {
 
   UserProfile copyWith({
     int? id,
-    String? gender,
-    int? age,
-    double? height,
-    double? weight,
-    String? avatarPath,
-    String? dietPreference,
-    String? ttmStage,
+    Value<String?> email = const Value.absent(),
+    Value<String?> fullName = const Value.absent(),
+    Value<String?> authToken = const Value.absent(),
+    Value<String?> gender = const Value.absent(),
+    Value<int?> age = const Value.absent(),
+    Value<double?> height = const Value.absent(),
+    Value<double?> weight = const Value.absent(),
+    Value<String?> avatarPath = const Value.absent(),
+    Value<String?> dietPreference = const Value.absent(),
+    Value<String?> ttmStage = const Value.absent(),
     int? totalPoints,
     bool? isPremium,
     int? dailyScanCount,
     String? lastScanDate,
   }) => UserProfile(
     id: id ?? this.id,
-    gender: gender ?? this.gender,
-    age: age ?? this.age,
-    height: height ?? this.height,
-    weight: weight ?? this.weight,
-    avatarPath: avatarPath ?? this.avatarPath,
-    dietPreference: dietPreference ?? this.dietPreference,
-    ttmStage: ttmStage ?? this.ttmStage,
+    email: email.present ? email.value : this.email,
+    fullName: fullName.present ? fullName.value : this.fullName,
+    authToken: authToken.present ? authToken.value : this.authToken,
+    gender: gender.present ? gender.value : this.gender,
+    age: age.present ? age.value : this.age,
+    height: height.present ? height.value : this.height,
+    weight: weight.present ? weight.value : this.weight,
+    avatarPath: avatarPath.present ? avatarPath.value : this.avatarPath,
+    dietPreference: dietPreference.present
+        ? dietPreference.value
+        : this.dietPreference,
+    ttmStage: ttmStage.present ? ttmStage.value : this.ttmStage,
     totalPoints: totalPoints ?? this.totalPoints,
     isPremium: isPremium ?? this.isPremium,
     dailyScanCount: dailyScanCount ?? this.dailyScanCount,
@@ -477,6 +575,9 @@ class UserProfile extends DataClass implements Insertable<UserProfile> {
   UserProfile copyWithCompanion(UserProfilesCompanion data) {
     return UserProfile(
       id: data.id.present ? data.id.value : this.id,
+      email: data.email.present ? data.email.value : this.email,
+      fullName: data.fullName.present ? data.fullName.value : this.fullName,
+      authToken: data.authToken.present ? data.authToken.value : this.authToken,
       gender: data.gender.present ? data.gender.value : this.gender,
       age: data.age.present ? data.age.value : this.age,
       height: data.height.present ? data.height.value : this.height,
@@ -505,6 +606,9 @@ class UserProfile extends DataClass implements Insertable<UserProfile> {
   String toString() {
     return (StringBuffer('UserProfile(')
           ..write('id: $id, ')
+          ..write('email: $email, ')
+          ..write('fullName: $fullName, ')
+          ..write('authToken: $authToken, ')
           ..write('gender: $gender, ')
           ..write('age: $age, ')
           ..write('height: $height, ')
@@ -523,6 +627,9 @@ class UserProfile extends DataClass implements Insertable<UserProfile> {
   @override
   int get hashCode => Object.hash(
     id,
+    email,
+    fullName,
+    authToken,
     gender,
     age,
     height,
@@ -540,6 +647,9 @@ class UserProfile extends DataClass implements Insertable<UserProfile> {
       identical(this, other) ||
       (other is UserProfile &&
           other.id == this.id &&
+          other.email == this.email &&
+          other.fullName == this.fullName &&
+          other.authToken == this.authToken &&
           other.gender == this.gender &&
           other.age == this.age &&
           other.height == this.height &&
@@ -555,19 +665,25 @@ class UserProfile extends DataClass implements Insertable<UserProfile> {
 
 class UserProfilesCompanion extends UpdateCompanion<UserProfile> {
   final Value<int> id;
-  final Value<String> gender;
-  final Value<int> age;
-  final Value<double> height;
-  final Value<double> weight;
-  final Value<String> avatarPath;
-  final Value<String> dietPreference;
-  final Value<String> ttmStage;
+  final Value<String?> email;
+  final Value<String?> fullName;
+  final Value<String?> authToken;
+  final Value<String?> gender;
+  final Value<int?> age;
+  final Value<double?> height;
+  final Value<double?> weight;
+  final Value<String?> avatarPath;
+  final Value<String?> dietPreference;
+  final Value<String?> ttmStage;
   final Value<int> totalPoints;
   final Value<bool> isPremium;
   final Value<int> dailyScanCount;
   final Value<String> lastScanDate;
   const UserProfilesCompanion({
     this.id = const Value.absent(),
+    this.email = const Value.absent(),
+    this.fullName = const Value.absent(),
+    this.authToken = const Value.absent(),
     this.gender = const Value.absent(),
     this.age = const Value.absent(),
     this.height = const Value.absent(),
@@ -582,26 +698,26 @@ class UserProfilesCompanion extends UpdateCompanion<UserProfile> {
   });
   UserProfilesCompanion.insert({
     this.id = const Value.absent(),
-    required String gender,
-    required int age,
-    required double height,
-    required double weight,
-    required String avatarPath,
-    required String dietPreference,
-    required String ttmStage,
+    this.email = const Value.absent(),
+    this.fullName = const Value.absent(),
+    this.authToken = const Value.absent(),
+    this.gender = const Value.absent(),
+    this.age = const Value.absent(),
+    this.height = const Value.absent(),
+    this.weight = const Value.absent(),
+    this.avatarPath = const Value.absent(),
+    this.dietPreference = const Value.absent(),
+    this.ttmStage = const Value.absent(),
     this.totalPoints = const Value.absent(),
     this.isPremium = const Value.absent(),
     this.dailyScanCount = const Value.absent(),
     this.lastScanDate = const Value.absent(),
-  }) : gender = Value(gender),
-       age = Value(age),
-       height = Value(height),
-       weight = Value(weight),
-       avatarPath = Value(avatarPath),
-       dietPreference = Value(dietPreference),
-       ttmStage = Value(ttmStage);
+  });
   static Insertable<UserProfile> custom({
     Expression<int>? id,
+    Expression<String>? email,
+    Expression<String>? fullName,
+    Expression<String>? authToken,
     Expression<String>? gender,
     Expression<int>? age,
     Expression<double>? height,
@@ -616,6 +732,9 @@ class UserProfilesCompanion extends UpdateCompanion<UserProfile> {
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
+      if (email != null) 'email': email,
+      if (fullName != null) 'full_name': fullName,
+      if (authToken != null) 'auth_token': authToken,
       if (gender != null) 'gender': gender,
       if (age != null) 'age': age,
       if (height != null) 'height': height,
@@ -632,13 +751,16 @@ class UserProfilesCompanion extends UpdateCompanion<UserProfile> {
 
   UserProfilesCompanion copyWith({
     Value<int>? id,
-    Value<String>? gender,
-    Value<int>? age,
-    Value<double>? height,
-    Value<double>? weight,
-    Value<String>? avatarPath,
-    Value<String>? dietPreference,
-    Value<String>? ttmStage,
+    Value<String?>? email,
+    Value<String?>? fullName,
+    Value<String?>? authToken,
+    Value<String?>? gender,
+    Value<int?>? age,
+    Value<double?>? height,
+    Value<double?>? weight,
+    Value<String?>? avatarPath,
+    Value<String?>? dietPreference,
+    Value<String?>? ttmStage,
     Value<int>? totalPoints,
     Value<bool>? isPremium,
     Value<int>? dailyScanCount,
@@ -646,6 +768,9 @@ class UserProfilesCompanion extends UpdateCompanion<UserProfile> {
   }) {
     return UserProfilesCompanion(
       id: id ?? this.id,
+      email: email ?? this.email,
+      fullName: fullName ?? this.fullName,
+      authToken: authToken ?? this.authToken,
       gender: gender ?? this.gender,
       age: age ?? this.age,
       height: height ?? this.height,
@@ -665,6 +790,15 @@ class UserProfilesCompanion extends UpdateCompanion<UserProfile> {
     final map = <String, Expression>{};
     if (id.present) {
       map['id'] = Variable<int>(id.value);
+    }
+    if (email.present) {
+      map['email'] = Variable<String>(email.value);
+    }
+    if (fullName.present) {
+      map['full_name'] = Variable<String>(fullName.value);
+    }
+    if (authToken.present) {
+      map['auth_token'] = Variable<String>(authToken.value);
     }
     if (gender.present) {
       map['gender'] = Variable<String>(gender.value);
@@ -706,6 +840,9 @@ class UserProfilesCompanion extends UpdateCompanion<UserProfile> {
   String toString() {
     return (StringBuffer('UserProfilesCompanion(')
           ..write('id: $id, ')
+          ..write('email: $email, ')
+          ..write('fullName: $fullName, ')
+          ..write('authToken: $authToken, ')
           ..write('gender: $gender, ')
           ..write('age: $age, ')
           ..write('height: $height, ')
@@ -2906,13 +3043,16 @@ abstract class _$AppDatabase extends GeneratedDatabase {
 typedef $$UserProfilesTableCreateCompanionBuilder =
     UserProfilesCompanion Function({
       Value<int> id,
-      required String gender,
-      required int age,
-      required double height,
-      required double weight,
-      required String avatarPath,
-      required String dietPreference,
-      required String ttmStage,
+      Value<String?> email,
+      Value<String?> fullName,
+      Value<String?> authToken,
+      Value<String?> gender,
+      Value<int?> age,
+      Value<double?> height,
+      Value<double?> weight,
+      Value<String?> avatarPath,
+      Value<String?> dietPreference,
+      Value<String?> ttmStage,
       Value<int> totalPoints,
       Value<bool> isPremium,
       Value<int> dailyScanCount,
@@ -2921,13 +3061,16 @@ typedef $$UserProfilesTableCreateCompanionBuilder =
 typedef $$UserProfilesTableUpdateCompanionBuilder =
     UserProfilesCompanion Function({
       Value<int> id,
-      Value<String> gender,
-      Value<int> age,
-      Value<double> height,
-      Value<double> weight,
-      Value<String> avatarPath,
-      Value<String> dietPreference,
-      Value<String> ttmStage,
+      Value<String?> email,
+      Value<String?> fullName,
+      Value<String?> authToken,
+      Value<String?> gender,
+      Value<int?> age,
+      Value<double?> height,
+      Value<double?> weight,
+      Value<String?> avatarPath,
+      Value<String?> dietPreference,
+      Value<String?> ttmStage,
       Value<int> totalPoints,
       Value<bool> isPremium,
       Value<int> dailyScanCount,
@@ -2945,6 +3088,21 @@ class $$UserProfilesTableFilterComposer
   });
   ColumnFilters<int> get id => $composableBuilder(
     column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get email => $composableBuilder(
+    column: $table.email,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get fullName => $composableBuilder(
+    column: $table.fullName,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get authToken => $composableBuilder(
+    column: $table.authToken,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -3018,6 +3176,21 @@ class $$UserProfilesTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get email => $composableBuilder(
+    column: $table.email,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get fullName => $composableBuilder(
+    column: $table.fullName,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get authToken => $composableBuilder(
+    column: $table.authToken,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<String> get gender => $composableBuilder(
     column: $table.gender,
     builder: (column) => ColumnOrderings(column),
@@ -3085,6 +3258,15 @@ class $$UserProfilesTableAnnotationComposer
   });
   GeneratedColumn<int> get id =>
       $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get email =>
+      $composableBuilder(column: $table.email, builder: (column) => column);
+
+  GeneratedColumn<String> get fullName =>
+      $composableBuilder(column: $table.fullName, builder: (column) => column);
+
+  GeneratedColumn<String> get authToken =>
+      $composableBuilder(column: $table.authToken, builder: (column) => column);
 
   GeneratedColumn<String> get gender =>
       $composableBuilder(column: $table.gender, builder: (column) => column);
@@ -3162,19 +3344,25 @@ class $$UserProfilesTableTableManager
           updateCompanionCallback:
               ({
                 Value<int> id = const Value.absent(),
-                Value<String> gender = const Value.absent(),
-                Value<int> age = const Value.absent(),
-                Value<double> height = const Value.absent(),
-                Value<double> weight = const Value.absent(),
-                Value<String> avatarPath = const Value.absent(),
-                Value<String> dietPreference = const Value.absent(),
-                Value<String> ttmStage = const Value.absent(),
+                Value<String?> email = const Value.absent(),
+                Value<String?> fullName = const Value.absent(),
+                Value<String?> authToken = const Value.absent(),
+                Value<String?> gender = const Value.absent(),
+                Value<int?> age = const Value.absent(),
+                Value<double?> height = const Value.absent(),
+                Value<double?> weight = const Value.absent(),
+                Value<String?> avatarPath = const Value.absent(),
+                Value<String?> dietPreference = const Value.absent(),
+                Value<String?> ttmStage = const Value.absent(),
                 Value<int> totalPoints = const Value.absent(),
                 Value<bool> isPremium = const Value.absent(),
                 Value<int> dailyScanCount = const Value.absent(),
                 Value<String> lastScanDate = const Value.absent(),
               }) => UserProfilesCompanion(
                 id: id,
+                email: email,
+                fullName: fullName,
+                authToken: authToken,
                 gender: gender,
                 age: age,
                 height: height,
@@ -3190,19 +3378,25 @@ class $$UserProfilesTableTableManager
           createCompanionCallback:
               ({
                 Value<int> id = const Value.absent(),
-                required String gender,
-                required int age,
-                required double height,
-                required double weight,
-                required String avatarPath,
-                required String dietPreference,
-                required String ttmStage,
+                Value<String?> email = const Value.absent(),
+                Value<String?> fullName = const Value.absent(),
+                Value<String?> authToken = const Value.absent(),
+                Value<String?> gender = const Value.absent(),
+                Value<int?> age = const Value.absent(),
+                Value<double?> height = const Value.absent(),
+                Value<double?> weight = const Value.absent(),
+                Value<String?> avatarPath = const Value.absent(),
+                Value<String?> dietPreference = const Value.absent(),
+                Value<String?> ttmStage = const Value.absent(),
                 Value<int> totalPoints = const Value.absent(),
                 Value<bool> isPremium = const Value.absent(),
                 Value<int> dailyScanCount = const Value.absent(),
                 Value<String> lastScanDate = const Value.absent(),
               }) => UserProfilesCompanion.insert(
                 id: id,
+                email: email,
+                fullName: fullName,
+                authToken: authToken,
                 gender: gender,
                 age: age,
                 height: height,

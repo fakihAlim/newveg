@@ -9,6 +9,8 @@ import 'package:newveg/features/dashboard/presentation/screens/navigation_wrappe
 
 import 'package:newveg/features/core/sync/sync_service.dart';
 
+import 'package:newveg/features/auth/presentation/screens/auth_gate.dart';
+
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
@@ -38,26 +40,11 @@ class NewVegApp extends ConsumerWidget {
     // Initialize network status monitoring and background sync
     ref.watch(syncInitProvider);
 
-    final profileAsync = ref.watch(userProfileFutureProvider);
-
     return MaterialApp(
       title: 'NewVeg — Plant-Based Diet',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
-      home: profileAsync.when(
-        data: (profile) {
-          if (profile != null) {
-            return NavigationWrapper(initialTtmStage: profile.ttmStage);
-          }
-          return const ProfileInputScreen();
-        },
-        loading: () => const Scaffold(
-          body: Center(
-            child: CircularProgressIndicator(color: AppColors.primary),
-          ),
-        ),
-        error: (err, stack) => const ProfileInputScreen(),
-      ),
+      home: const AuthGate(),
     );
   }
 }

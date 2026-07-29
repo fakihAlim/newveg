@@ -22,7 +22,7 @@ class AppDatabase extends _$AppDatabase {
   }
 
   @override
-  int get schemaVersion => 5;
+  int get schemaVersion => 6;
 
   @override
   MigrationStrategy get migration {
@@ -53,6 +53,12 @@ class AppDatabase extends _$AppDatabase {
           await m.createTable(communityPosts);
           // Seed default badges
           await _seedDefaultBadges(m);
+        }
+        if (from < 6) {
+          // Add auth columns in schema v6.
+          await m.addColumn(userProfiles, userProfiles.email);
+          await m.addColumn(userProfiles, userProfiles.fullName);
+          await m.addColumn(userProfiles, userProfiles.authToken);
         }
       },
     );

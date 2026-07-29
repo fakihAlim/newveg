@@ -5,13 +5,16 @@ import 'package:drift/drift.dart';
 /// and monetization flags (premium status, scan limits).
 class UserProfiles extends Table {
   IntColumn get id => integer().autoIncrement()();
-  TextColumn get gender => text().withLength(min: 1, max: 10)();
-  IntColumn get age => integer()();
-  RealColumn get height => real()();
-  RealColumn get weight => real()();
-  TextColumn get avatarPath => text().withLength(min: 1, max: 100)();
-  TextColumn get dietPreference => text().withLength(min: 1, max: 50)();
-  TextColumn get ttmStage => text().withLength(min: 1, max: 50)();
+  TextColumn get email => text().nullable()();
+  TextColumn get fullName => text().nullable()();
+  TextColumn get authToken => text().nullable()();
+  TextColumn get gender => text().nullable()();
+  IntColumn get age => integer().nullable()();
+  RealColumn get height => real().nullable()();
+  RealColumn get weight => real().nullable()();
+  TextColumn get avatarPath => text().nullable()();
+  TextColumn get dietPreference => text().nullable()();
+  TextColumn get ttmStage => text().nullable()();
   IntColumn get totalPoints => integer().withDefault(const Constant(0))();
   BoolColumn get isPremium => boolean().withDefault(const Constant(false))();
   IntColumn get dailyScanCount => integer().withDefault(const Constant(0))();

@@ -1,7 +1,9 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/material';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:newveg/core/theme/app_theme.dart';
 import 'package:newveg/features/insights/presentation/screens/myth_detail_screen.dart';
 import 'package:newveg/features/insights/presentation/screens/recipe_detail_screen.dart';
+import 'package:newveg/features/content/presentation/providers/content_provider.dart';
 
 class InsightsScreen extends StatelessWidget {
   const InsightsScreen({super.key});
@@ -130,86 +132,100 @@ class _MythFactCard extends StatelessWidget {
 // ---------------------------------------------------------------------------
 // Latest News Horizontal List
 // ---------------------------------------------------------------------------
-class _LatestNewsSection extends StatelessWidget {
+class _LatestNewsSection extends ConsumerWidget {
   const _LatestNewsSection();
 
-  static const List<Map<String, String>> _articles = [
-    {
-      'title': '5 Sumber Kalsium Nabati Terbaik Selain Susu Sapi',
-      'source': 'Health Journal',
-      'readTime': '3 menit baca',
-      'image': 'https://images.unsplash.com/photo-1540420773420-3366772f4999?auto=format&fit=crop&q=80&w=200',
-    },
-    {
-      'title': 'Bagaimana Diet Vegan Menurunkan Risiko Kolesterol',
-      'source': 'NutriScience',
-      'readTime': '5 menit baca',
-      'image': 'https://images.unsplash.com/photo-1498837167922-ddd27525d352?auto=format&fit=crop&q=80&w=200',
-    },
-  ];
-
   @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      height: 110,
-      child: ListView.builder(
-        scrollDirection: Axis.horizontal,
-        itemCount: _articles.length,
-        itemBuilder: (context, index) {
-          final article = _articles[index];
-          return Container(
-            width: 280,
-            margin: const EdgeInsets.only(right: 12),
-            decoration: BoxDecoration(
-              color: AppColors.surface,
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: AppColors.divider),
-            ),
-            padding: const EdgeInsets.all(12),
-            child: Row(
-              children: [
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(12),
-                  child: Image.network(
-                    article['image']!,
-                    width: 70,
-                    height: 70,
-                    fit: BoxFit.cover,
-                    errorBuilder: (_, _, _) => Container(
-                      width: 70,
-                      height: 70,
-                      color: AppColors.surfaceVariant,
-                      child: const Icon(Icons.article, color: AppColors.primary),
-                    ),
-                  ),
+  Widget build(BuildContext context, WidgetRef ref) {
+    final newsAsync = ref.watch(remoteNewsProvider);
+
+    return newsAsync.when(
+      data: (articles) {
+        if (articles.isEmpty) {
+          return const SizedBox(
+            height: 100,
+            child: Center(child: Text('Tidak ada artikel kesehatan terbaru.')),
+          );
+        }
+
+        return SizedBox(
+          height: 110,
+          child: ListView.builder(
+            scrollDirection: Axis.horizontal,
+            itemCount: articles.length,
+            itemBuilder: (context, index) {
+              final article = articles[index];
+              final title = article['title'] as String? ?? '';
+              final category = article['category'] as String? ?? 'Nutrition';
+              final content = article['content'] as String? ?? '';
+              final rawImage = article['image_url'] as String? ?? '';
+              final imageUrl = rawImage.startsWith('http')
+                  ? rawImage
+                  : 'https://yodi.my.id/veg/web/$rawImage';
+
+              return Container(
+                width: 280,
+                margin: const EdgeInsets.only(right: 12),
+                decoration: BoxDecoration(
+                  color: AppColors.surface,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: AppColors.divider),
                 ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        article['title']!,
-                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
+                padding: const EdgeInsets.all(12),
+                child: Row(
+                  children: [
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(12),
+                      child: Image.network(
+                        imageUrl,
+                        width: 70,
+                        height: 70,
+                        fit: BoxFit.cover,
+                        errorBuilder: (_, _, _) => Container(
+                          width: 70,
+                          height: 70,
+                          color: AppColors.surfaceVariant,
+                          child: const Icon(Icons.article, color: AppColors.primary),
+                        ),
                       ),
-                      const SizedBox(height: 6),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Text(article['source']!, style: const TextStyle(fontSize: 10, color: AppColors.primary)),
-                          Text(article['readTime']!, style: const TextStyle(fontSize: 10, color: AppColors.textHint)),
+                          Text(
+                            title,
+                            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          const SizedBox(height: 6),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(category, style: const TextStyle(fontSize: 10, color: AppColors.primary)),
+                              const Text('3 mnt baca', style: TextStyle(fontSize: 10, color: AppColors.textHint)),
+                            ],
+                          ),
                         ],
                       ),
-                    ],
-                  ),
-                )
-              ],
-            ),
-          );
-        },
+                    )
+                  ],
+                ),
+              );
+            },
+          ),
+        );
+      },
+      loading: () => const SizedBox(
+        height: 110,
+        child: Center(child: CircularProgressIndicator(color: AppColors.primary)),
+      ),
+      error: (e, _) => const SizedBox(
+        height: 100,
+        child: Center(child: Text('Gagal memuat artikel')),
       ),
     );
   }
@@ -218,143 +234,144 @@ class _LatestNewsSection extends StatelessWidget {
 // ---------------------------------------------------------------------------
 // Featured Recipes List
 // ---------------------------------------------------------------------------
-class _FeaturedRecipesSection extends StatelessWidget {
+class _FeaturedRecipesSection extends ConsumerWidget {
   const _FeaturedRecipesSection();
 
-  static const List<Map<String, dynamic>> _recipes = [
-    {
-      'id': 'r1',
-      'title': 'Salad Tahu Saus Kacang',
-      'calories': 320,
-      'prepTime': 15,
-      'difficulty': 'Mudah',
-      'image': 'https://images.unsplash.com/photo-1540420773420-3366772f4999?auto=format&fit=crop&q=80&w=400',
-      'ingredients': [
-        '100g Tahu putih potong dadu, panggang',
-        '50g Selada segar iris tipis',
-        '30g Kacang tanah sangrai, haluskan',
-        '1 sdm Kecap manis organik',
-        '1/2 sdt Perasan jeruk nipis',
-        'Sedikit garam & cabai (sesuai selera)'
-      ],
-    },
-    {
-      'id': 'r2',
-      'title': 'Curry Kentang & Wortel Gurih',
-      'calories': 450,
-      'prepTime': 25,
-      'difficulty': 'Sedang',
-      'image': 'https://images.unsplash.com/photo-1498837167922-ddd27525d352?auto=format&fit=crop&q=80&w=400',
-      'ingredients': [
-        '2 buah Kentang ukuran sedang, potong dadu',
-        '1 buah Wortel iris melingkar',
-        '200ml Santan encer nabati / santan kelapa',
-        '1 sdm Bumbu kari instan alami',
-        '1 batang Serai dimemarkan',
-        '2 lembar Daun jeruk segar'
-      ],
-    },
-  ];
-
   @override
-  Widget build(BuildContext context) {
-    return ListView.separated(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      itemCount: _recipes.length,
-      separatorBuilder: (_, _) => const SizedBox(height: 12),
-      itemBuilder: (context, index) {
-        final recipe = _recipes[index];
-        return Card(
-          elevation: 0,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-            side: const BorderSide(color: AppColors.divider),
-          ),
-          child: InkWell(
-            borderRadius: BorderRadius.circular(16),
-            onTap: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (_) => RecipeDetailScreen(
-                    recipeId: recipe['id'] as String,
-                    title: recipe['title'] as String,
-                    calories: recipe['calories'] as int,
-                    prepTime: recipe['prepTime'] as int,
-                    difficulty: recipe['difficulty'] as String,
-                    imageUrl: recipe['image'] as String,
-                    ingredients: List<String>.from(recipe['ingredients'] as List),
-                  ),
-                ),
-              );
-            },
-            child: Row(
-              children: [
-                ClipRRect(
-                  borderRadius: const BorderRadius.horizontal(left: Radius.circular(16)),
-                  child: Image.network(
-                    recipe['image'] as String,
-                    width: 110,
-                    height: 110,
-                    fit: BoxFit.cover,
-                    errorBuilder: (_, _, _) => Container(
-                      width: 110,
-                      height: 110,
-                      color: AppColors.surfaceVariant,
-                      child: const Icon(Icons.restaurant, color: AppColors.primary),
+  Widget build(BuildContext context, WidgetRef ref) {
+    final recipesAsync = ref.watch(remoteRecipesProvider);
+
+    return recipesAsync.when(
+      data: (recipes) {
+        if (recipes.isEmpty) {
+          return const SizedBox(
+            height: 120,
+            child: Center(child: Text('Tidak ada resep berbasis nabati.')),
+          );
+        }
+
+        return ListView.separated(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          itemCount: recipes.length,
+          separatorBuilder: (_, _) => const SizedBox(height: 12),
+          itemBuilder: (context, index) {
+            final recipe = recipes[index];
+            final title = recipe['title'] as String? ?? '';
+            final calories = (recipe['calories'] as num?)?.toInt() ?? 0;
+            final prepTime = (recipe['prep_time_mins'] as num?)?.toInt() ?? 0;
+            final difficulty = recipe['difficulty'] as String? ?? 'Easy';
+            final rawImage = recipe['image_url'] as String? ?? '';
+            final imageUrl = rawImage.startsWith('http')
+                ? rawImage
+                : 'https://yodi.my.id/veg/web/$rawImage';
+            
+            // Handle ingredients field, fallback to static if not a list
+            final dynamic rawIngredients = recipe['ingredients'];
+            final List<String> ingredientsList = rawIngredients is List
+                ? List<String>.from(rawIngredients)
+                : ['Bahan dapat dilihat di detail resep.'];
+
+            return Card(
+              elevation: 0,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+                side: const BorderSide(color: AppColors.divider),
+              ),
+              child: InkWell(
+                borderRadius: BorderRadius.circular(16),
+                onTap: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) => RecipeDetailScreen(
+                        recipeId: (recipe['id'] ?? index).toString(),
+                        title: title,
+                        calories: calories,
+                        prepTime: prepTime,
+                        difficulty: difficulty,
+                        imageUrl: imageUrl,
+                        ingredients: ingredientsList,
+                      ),
                     ),
-                  ),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                          decoration: BoxDecoration(
-                            color: AppColors.primary.withValues(alpha: 0.1),
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: Text(
-                            recipe['difficulty'] as String,
-                            style: const TextStyle(
-                              color: AppColors.primary,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 10,
-                            ),
-                          ),
+                  );
+                },
+                child: Row(
+                  children: [
+                    ClipRRect(
+                      borderRadius: const BorderRadius.horizontal(left: Radius.circular(16)),
+                      child: Image.network(
+                        imageUrl,
+                        width: 110,
+                        height: 110,
+                        fit: BoxFit.cover,
+                        errorBuilder: (_, _, _) => Container(
+                          width: 110,
+                          height: 110,
+                          color: AppColors.surfaceVariant,
+                          child: const Icon(Icons.restaurant, color: AppColors.primary),
                         ),
-                        const SizedBox(height: 8),
-                        Text(
-                          recipe['title'] as String,
-                          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        const SizedBox(height: 6),
-                        Row(
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Icon(Icons.timer_outlined, size: 14, color: AppColors.textHint),
-                            const SizedBox(width: 4),
-                            Text('${recipe['prepTime']} min', style: const TextStyle(fontSize: 11, color: AppColors.textSecondary)),
-                            const SizedBox(width: 12),
-                            const Icon(Icons.local_fire_department_rounded, size: 14, color: Color(0xFFFF7043)),
-                            const SizedBox(width: 4),
-                            Text('${recipe['calories']} kkal', style: const TextStyle(fontSize: 11, color: AppColors.textSecondary)),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                              decoration: BoxDecoration(
+                                color: AppColors.primary.withValues(alpha: 0.1),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Text(
+                                difficulty,
+                                style: const TextStyle(
+                                  color: AppColors.primary,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 10,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              title,
+                              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            const SizedBox(height: 6),
+                            Row(
+                              children: [
+                                const Icon(Icons.timer_outlined, size: 14, color: AppColors.textHint),
+                                const SizedBox(width: 4),
+                                Text('$prepTime min', style: const TextStyle(fontSize: 11, color: AppColors.textSecondary)),
+                                const SizedBox(width: 12),
+                                const Icon(Icons.local_fire_department_rounded, size: 14, color: Color(0xFFFF7043)),
+                                const SizedBox(width: 4),
+                                Text('$calories kkal', style: const TextStyle(fontSize: 11, color: AppColors.textSecondary)),
+                              ],
+                            ),
                           ],
                         ),
-                      ],
-                    ),
-                  ),
-                )
-              ],
-            ),
-          ),
+                      ),
+                    )
+                  ],
+                ),
+              ),
+            );
+          },
         );
       },
+      loading: () => const SizedBox(
+        height: 150,
+        child: Center(child: CircularProgressIndicator(color: AppColors.primary)),
+      ),
+      error: (e, _) => const SizedBox(
+        height: 120,
+        child: Center(child: Text('Gagal memuat resep berbasis nabati.')),
+      ),
     );
   }
 }

@@ -179,23 +179,26 @@ class OnboardingNotifier extends StateNotifier<OnboardingState> {
   }
 
   /// Writes the accumulated onboarding data into the local SQLite database.
-  /// New users default to free tier (isPremium: false) with zero scan count.
-  /// Returns the inserted row ID on success.
-  Future<int> saveProfile() async {
+  /// Updates the existing row created during registration, or inserts a fallback.
+  Future<void> saveProfile() async {
+    final existingProfile = await _db.getUserProfile();
     final profile = UserProfilesCompanion(
-      gender: Value(state.gender!),
-      age: Value(state.age!),
-      height: Value(state.height!),
-      weight: Value(state.weight!),
-      avatarPath: Value(state.avatarPath!),
-      dietPreference: Value(state.dietPreference!),
-      ttmStage: Value(state.ttmStage!),
-      totalPoints: const Value(0),
-      isPremium: const Value(false),
+      gender: Value(state.gender),
+      age: Value(state.age),
+      height: Value(state.height),
+      weight: Value(state.weight),
+      avatarPath: Value(state.avatarPath),
+      dietPreference: Value(state.dietPreference),
+      ttmStage: Value(state.ttmStage),
       dailyScanCount: const Value(0),
       lastScanDate: const Value(''),
     );
-    return _db.insertUserProfile(profile);
+
+    if (existingProfile != null) {
+      await _db.updateUserProfile(existingProfile.id, profile);
+    } else {
+      await _db.insertUserProfile(profile);
+    }
   }
 }
 
