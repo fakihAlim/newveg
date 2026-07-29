@@ -1,4 +1,4 @@
-import 'package:flutter/material';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:newveg/core/database/database_provider.dart';
 import 'package:newveg/core/theme/app_theme.dart';
@@ -101,11 +101,11 @@ class _DailyQuizScreenState extends ConsumerState<DailyQuizScreen> {
                         if (isCorrect) {
                           itemColor = AppColors.primary.withValues(alpha: 0.08);
                           borderColor = AppColors.primary;
-                          suffixIcon = const Icon(Icons.check_circle_rounded, color: AppColors.primary);
+                          suffixIcon = Icon(Icons.check_circle_rounded, color: AppColors.primary);
                         } else if (isSelected) {
                           itemColor = AppColors.error.withValues(alpha: 0.08);
                           borderColor = AppColors.error;
-                          suffixIcon = const Icon(Icons.cancel_rounded, color: AppColors.error);
+                          suffixIcon = Icon(Icons.cancel_rounded, color: AppColors.error);
                         }
                       } else if (isSelected) {
                         borderColor = AppColors.primary;

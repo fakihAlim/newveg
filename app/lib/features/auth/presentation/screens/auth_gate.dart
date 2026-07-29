@@ -1,4 +1,4 @@
-import 'package:flutter/material';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:newveg/core/theme/app_theme.dart';
 import 'package:newveg/features/auth/presentation/providers/auth_provider.dart';
