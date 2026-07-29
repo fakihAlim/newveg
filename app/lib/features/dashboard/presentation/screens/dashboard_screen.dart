@@ -62,14 +62,6 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     final foodLogsFuture = ref.watch(foodLogsByDateProvider(selectedDate));
 
     return Scaffold(
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: _navigateToAddFoodLog,
-        backgroundColor: AppColors.primary,
-        foregroundColor: Colors.white,
-        elevation: 4,
-        icon: const Icon(Icons.camera_alt_rounded),
-        label: const Text('Log Makanan'),
-      ),
       body: SafeArea(
         child: FutureBuilder<UserProfile?>(
           future: db.getUserProfile(),
@@ -589,82 +581,224 @@ class _FoodLogListItem extends StatelessWidget {
   final FoodLog log;
   const _FoodLogListItem({required this.log});
 
+  void _showLogDetail(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) {
+        final theme = Theme.of(context);
+        return Container(
+          decoration: const BoxDecoration(
+            color: AppColors.surface,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+          ),
+          padding: const EdgeInsets.fromLTRB(24, 12, 24, 32),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Drag handle
+              Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: AppColors.divider,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              const SizedBox(height: 20),
+              
+              // Food Photo
+              ClipRRect(
+                borderRadius: BorderRadius.circular(20),
+                child: log.imagePath.startsWith('/') || log.imagePath.contains(':') || log.imagePath.contains('\\')
+                    ? Image.file(
+                        File(log.imagePath),
+                        width: double.infinity,
+                        height: 220,
+                        fit: BoxFit.cover,
+                        errorBuilder: (_, __, ___) => _buildImagePlaceholder(),
+                      )
+                    : _buildImagePlaceholder(),
+              ),
+              const SizedBox(height: 20),
+              
+              // Food Name & Type
+              Text(
+                log.foodName,
+                style: theme.textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 4),
+              Text(
+                'Kategori: ${log.mealType}',
+                style: const TextStyle(color: AppColors.textSecondary, fontSize: 13),
+              ),
+              const SizedBox(height: 16),
+              
+              // Points Badge
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                decoration: BoxDecoration(
+                  color: log.isPlantBased
+                      ? AppColors.primary.withValues(alpha: 0.1)
+                      : AppColors.error.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Text(
+                  log.isPlantBased ? 'Sesuai Diet (🌿 +${log.pointsEarned} Pts)' : 'Tidak Sesuai (⚠️ -${log.pointsEarned.abs()} Pts)',
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: log.isPlantBased ? AppColors.primary : AppColors.error,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 20),
+              
+              // Macros Breakdown
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: AppColors.surfaceVariant,
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  children: [
+                    _MacroDetailItem(
+                      label: 'Kalori',
+                      value: '${log.calories.toInt()} kkal',
+                      color: const Color(0xFFFF7043),
+                    ),
+                    _MacroDetailItem(
+                      label: 'Karbo',
+                      value: '${log.carbs.toInt()} g',
+                      color: const Color(0xFFFFB74D),
+                    ),
+                    _MacroDetailItem(
+                      label: 'Lemak',
+                      value: '${log.fats.toInt()} g',
+                      color: const Color(0xFF4FC3F7),
+                    ),
+                    _MacroDetailItem(
+                      label: 'Protein',
+                      value: '${log.protein.toInt()} g',
+                      color: const Color(0xFF81C784),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 24),
+              
+              // Back Button
+              SizedBox(
+                width: double.infinity,
+                height: 50,
+                child: ElevatedButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text('Tutup'),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildImagePlaceholder() {
+    return Container(
+      width: double.infinity,
+      height: 220,
+      color: AppColors.surfaceVariant,
+      child: const Icon(Icons.restaurant_rounded, size: 64, color: AppColors.primary),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final isCompliant = log.isPlantBased;
 
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
+    return Card(
+      elevation: 0,
+      margin: EdgeInsets.zero,
+      shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.divider),
+        side: const BorderSide(color: AppColors.divider),
       ),
-      child: Row(
-        children: [
-          // Image thumbnail
-          ClipRRect(
-            borderRadius: BorderRadius.circular(12),
-            child: log.imagePath.startsWith('/') || log.imagePath.contains(':') || log.imagePath.contains('\\')
-                ? Image.file(
-                    File(log.imagePath),
-                    width: 50,
-                    height: 50,
-                    fit: BoxFit.cover,
-                    errorBuilder: (_, _, _) => _buildPlaceholderIcon(),
-                  )
-                : _buildPlaceholderIcon(),
-          ),
-          const SizedBox(width: 12),
-          // Food details
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  log.foodName,
-                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  '${log.calories.toInt()} kkal · C: ${log.carbs.toInt()}g P: ${log.protein.toInt()}g F: ${log.fats.toInt()}g',
-                  style: const TextStyle(fontSize: 11, color: AppColors.textSecondary),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(width: 8),
-          // Compliant status badge & points
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(16),
+        onTap: () => _showLogDetail(context),
+        child: Padding(
+          padding: const EdgeInsets.all(12),
+          child: Row(
             children: [
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                decoration: BoxDecoration(
-                  color: isCompliant
-                      ? AppColors.primary.withValues(alpha: 0.1)
-                      : AppColors.error.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Text(
-                  isCompliant ? '+50 Pts' : '-20 Pts',
-                  style: TextStyle(
-                    fontSize: 11,
-                    fontWeight: FontWeight.bold,
-                    color: isCompliant ? AppColors.primary : AppColors.error,
-                  ),
+              // Image thumbnail
+              ClipRRect(
+                borderRadius: BorderRadius.circular(12),
+                child: log.imagePath.startsWith('/') || log.imagePath.contains(':') || log.imagePath.contains('\\')
+                    ? Image.file(
+                        File(log.imagePath),
+                        width: 50,
+                        height: 50,
+                        fit: BoxFit.cover,
+                        errorBuilder: (_, _, _) => _buildPlaceholderIcon(),
+                      )
+                    : _buildPlaceholderIcon(),
+              ),
+              const SizedBox(width: 12),
+              // Food details
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      log.foodName,
+                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      '${log.calories.toInt()} kkal · C: ${log.carbs.toInt()}g P: ${log.protein.toInt()}g F: ${log.fats.toInt()}g',
+                      style: const TextStyle(fontSize: 11, color: AppColors.textSecondary),
+                    ),
+                  ],
                 ),
               ),
-              const SizedBox(height: 4),
-              Text(
-                log.mealType,
-                style: const TextStyle(fontSize: 11, color: AppColors.textHint),
+              const SizedBox(width: 8),
+              // Compliant status badge & points
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: isCompliant
+                          ? AppColors.primary.withValues(alpha: 0.1)
+                          : AppColors.error.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Text(
+                      isCompliant ? '+50 Pts' : '-20 Pts',
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.bold,
+                        color: isCompliant ? AppColors.primary : AppColors.error,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    log.mealType,
+                    style: const TextStyle(fontSize: 11, color: AppColors.textHint),
+                  )
+                ],
               )
             ],
-          )
-        ],
+          ),
+        ),
       ),
     );
   }
@@ -675,6 +809,35 @@ class _FoodLogListItem extends StatelessWidget {
       height: 50,
       color: AppColors.surfaceVariant,
       child: const Icon(Icons.restaurant_rounded, color: AppColors.primary, size: 24),
+    );
+  }
+}
+
+class _MacroDetailItem extends StatelessWidget {
+  final String label;
+  final String value;
+  final Color color;
+
+  const _MacroDetailItem({
+    required this.label,
+    required this.value,
+    required this.color,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        Text(
+          value,
+          style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: color),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          label,
+          style: const TextStyle(fontSize: 11, color: AppColors.textHint),
+        ),
+      ],
     );
   }
 }
