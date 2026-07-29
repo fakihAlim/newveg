@@ -69,7 +69,12 @@ class FoodAnalysisService {
     final response = await http.Response.fromStream(streamedResponse);
 
     if (response.statusCode != 200) {
-      throw Exception("Upload failed with status code: ${response.statusCode}");
+      try {
+        final Map<String, dynamic> errorJson = json.decode(response.body);
+        throw Exception(errorJson['message'] ?? "Upload failed with status code: ${response.statusCode}");
+      } catch (_) {
+        throw Exception("Upload failed with status code: ${response.statusCode}");
+      }
     }
 
     final Map<String, dynamic> responseJson = json.decode(response.body);
