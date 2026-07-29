@@ -239,3 +239,8 @@ body {
 .animated-fade {
     animation: fadeIn 0.4s ease forwards;
 }
+
+/* Override text-white for light theme readability */
+.text-white {
+    color: var(--text-primary) !important;
+}

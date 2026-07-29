@@ -170,9 +170,9 @@ try {
                                     <td class="text-white"><?= number_format($log['calories'], 0) ?> kcal</td>
                                     <td>
                                         <?php if ($log['is_compliant'] == 1): ?>
-                                            <span class="badge bg-success bg-opacity-15 text-success border border-success border-opacity-20 px-2 py-1">Plant-Based</span>
+                                            <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1">Plant-Based</span>
                                         <?php else: ?>
-                                            <span class="badge bg-danger bg-opacity-15 text-danger border border-danger border-opacity-20 px-2 py-1">Non-Compliant</span>
+                                            <span class="badge bg-danger-subtle text-danger border border-danger-subtle px-2 py-1">Non-Compliant</span>
                                         <?php endif; ?>
                                     </td>
                                 </tr>
