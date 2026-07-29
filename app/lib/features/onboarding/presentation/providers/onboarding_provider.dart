@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/database/app_database.dart';
 import '../../../../core/database/database_provider.dart';
 import 'onboarding_state.dart';
+import 'package:newveg/features/core/sync/sync_service.dart';
 
 // ---------------------------------------------------------------------------
 // TTM Question Model — designed to be replaceable with server-fetched data.
@@ -143,8 +144,9 @@ String determineTtmStage(int totalScore) {
 
 class OnboardingNotifier extends StateNotifier<OnboardingState> {
   final AppDatabase _db;
+  final SyncService _syncService;
 
-  OnboardingNotifier(this._db) : super(const OnboardingState());
+  OnboardingNotifier(this._db, this._syncService) : super(const OnboardingState());
 
   void setGender(String gender) {
     state = state.copyWith(gender: gender);
@@ -199,6 +201,9 @@ class OnboardingNotifier extends StateNotifier<OnboardingState> {
     } else {
       await _db.insertUserProfile(profile);
     }
+
+    // Trigger sync instantly to remote MySQL
+    _syncService.triggerSync();
   }
 }
 
@@ -210,7 +215,8 @@ class OnboardingNotifier extends StateNotifier<OnboardingState> {
 final onboardingProvider =
     StateNotifierProvider<OnboardingNotifier, OnboardingState>((ref) {
   final db = ref.watch(databaseProvider);
-  return OnboardingNotifier(db);
+  final syncService = ref.watch(syncServiceProvider);
+  return OnboardingNotifier(db, syncService);
 });
 
 /// Provider exposing the TTM questions list.

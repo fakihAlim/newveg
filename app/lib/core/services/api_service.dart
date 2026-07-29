@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:flutter/foundation.dart';
+import 'package:newveg/core/network/api_endpoints.dart';
 
 /// Service to communicate with the PHP RESTful API backend on the VPS server
 class ApiService {
@@ -25,7 +26,7 @@ class ApiService {
 
     try {
       final response = await http.post(
-        Uri.parse('$baseUrl/logs/sync.php'),
+        Uri.parse(ApiEndpoints.syncLogs),
         headers: {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer $_token',
@@ -54,11 +55,51 @@ class ApiService {
     }
   }
 
+  /// Update remote user profile metrics
+  Future<bool> updateProfile(Map<String, dynamic> profileJson) async {
+    if (_token == null) {
+      if (kDebugMode) {
+        print('API Service: Cannot update profile, user token is missing.');
+      }
+      return false;
+    }
+
+    try {
+      final response = await http.post(
+        Uri.parse(ApiEndpoints.updateProfile),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $_token',
+        },
+        body: json.encode(profileJson),
+      );
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        if (data['success'] == true) {
+          if (kDebugMode) {
+            print('API Service: Profile update success!');
+          }
+          return true;
+        }
+      }
+      if (kDebugMode) {
+        print('API Service: Profile update failed with status: ${response.statusCode}, response: ${response.body}');
+      }
+      return false;
+    } catch (e) {
+      if (kDebugMode) {
+        print('API Service Profile Update Connection Error: $e');
+      }
+      return false;
+    }
+  }
+
   /// Authenticate user credentials and retrieve JWT token
   Future<String?> login(String email, String password) async {
     try {
       final response = await http.post(
-        Uri.parse('$baseUrl/auth/login.php'),
+        Uri.parse(ApiEndpoints.login),
         headers: {'Content-Type': 'application/json'},
         body: json.encode({'email': email, 'password': password}),
       );

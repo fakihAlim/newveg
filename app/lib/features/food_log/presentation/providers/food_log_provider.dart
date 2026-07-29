@@ -9,6 +9,7 @@ import '../../../../core/database/database_provider.dart';
 import '../../../../core/services/gemini_vision_service.dart';
 import 'package:newveg/features/food_log/data/food_analysis_service.dart';
 import 'food_log_state.dart';
+import 'package:newveg/features/core/sync/sync_service.dart';
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -30,8 +31,9 @@ const int kNonCompliantPoints = -20;
 class FoodLogNotifier extends StateNotifier<FoodLogState> {
   final AppDatabase _db;
   final FoodAnalysisService _analysisService;
+  final SyncService _syncService;
 
-  FoodLogNotifier(this._db, this._analysisService) : super(const FoodLogState());
+  FoodLogNotifier(this._db, this._analysisService, this._syncService) : super(const FoodLogState());
 
   void setImage(File image) {
     state = state.copyWith(
@@ -125,6 +127,10 @@ class FoodLogNotifier extends StateNotifier<FoodLogState> {
       }
 
       state = state.copyWith(isSaving: false);
+      
+      // Trigger sync instantly to remote MySQL
+      _syncService.triggerSync();
+
       return points;
     } catch (e) {
       state = state.copyWith(
@@ -151,7 +157,8 @@ final foodLogProvider =
     StateNotifierProvider<FoodLogNotifier, FoodLogState>((ref) {
   final db = ref.watch(databaseProvider);
   final analysisService = ref.watch(foodAnalysisServiceProvider);
-  return FoodLogNotifier(db, analysisService);
+  final syncService = ref.watch(syncServiceProvider);
+  return FoodLogNotifier(db, analysisService, syncService);
 });
 
 /// Provider that fetches today's food logs from the database.

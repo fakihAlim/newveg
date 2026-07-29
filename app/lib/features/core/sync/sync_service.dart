@@ -36,6 +36,17 @@ class SyncService {
   /// Triggers food logs and profile synchronization process.
   Future<void> triggerSync() async {
     try {
+      final profile = await _db.getUserProfile();
+      if (profile == null) {
+        if (kDebugMode) {
+          print('Sync Engine: No active user profile session. Sync skipped.');
+        }
+        return;
+      }
+
+      // Ensure apiService token is updated
+      apiService.setToken(profile.authToken);
+
       // 1. Sync Food Logs
       final unsyncedLogs = await _db.getUnsyncedFoodLogs();
       if (unsyncedLogs.isEmpty) {
@@ -46,9 +57,6 @@ class SyncService {
         if (kDebugMode) {
           print('Sync Engine: Found ${unsyncedLogs.length} unsynced food logs.');
         }
-
-        // Initialize api connection with default demo login if token is not active
-        await apiService.login('admin@aa.com', 'admin123');
 
         // Transform drift model to backend JSON structure
         final logsJson = unsyncedLogs.map((log) => {
@@ -78,13 +86,25 @@ class SyncService {
         }
       }
 
-      // 2. Sync Profile data (points & ttm stage)
-      final profile = await _db.getUserProfile();
-      if (profile != null) {
-        // Simulated push profile to Firebase
-        await Future.delayed(const Duration(milliseconds: 300));
+      // 2. Sync Profile data (points, metrics & ttm stage)
+      final profileJson = {
+        'gender': profile.gender,
+        'age': profile.age,
+        'height': profile.height,
+        'weight': profile.weight,
+        'diet_preference': profile.dietPreference,
+        'ttm_stage': profile.ttmStage,
+        'total_points': profile.totalPoints,
+      };
+
+      final successProfile = await apiService.updateProfile(profileJson);
+      if (successProfile) {
         if (kDebugMode) {
-          print('Sync Engine: Profile (Points: ${profile.totalPoints}, TTM: ${profile.ttmStage}) synced.');
+          print('Sync Engine: Profile (Points: ${profile.totalPoints}, TTM: ${profile.ttmStage}) successfully synced to server.');
+        }
+      } else {
+        if (kDebugMode) {
+          print('Sync Engine: Failed to synchronize profile to remote server.');
         }
       }
     } catch (e) {

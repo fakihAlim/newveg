@@ -5,6 +5,7 @@ class ApiEndpoints {
   // Auth endpoints
   static const String login = '$baseUrl/auth/login.php';
   static const String register = '$baseUrl/auth/register.php';
+  static const String updateProfile = '$baseUrl/auth/update_profile.php';
 
   // Content endpoints
   static const String config = '$baseUrl/system/config.php';

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:newveg/core/database/app_database.dart';
 import 'package:newveg/core/database/database_provider.dart';
 import 'package:newveg/features/auth/data/auth_api_service.dart';
+import 'package:newveg/core/services/api_service.dart';
 
 /// Representation of the Authentication States
 class AuthState {
@@ -51,8 +52,10 @@ class AuthNotifier extends StateNotifier<AuthState> {
       final profile = await _db.getUserProfile();
       if (profile != null && profile.authToken != null && profile.authToken!.isNotEmpty) {
         state = AuthState(token: profile.authToken, profile: profile);
+        apiService.setToken(profile.authToken);
       } else {
         state = const AuthState();
+        apiService.setToken(null);
       }
     } catch (e) {
       state = AuthState(errorMessage: 'Gagal memuat sesi: $e');
