@@ -74,7 +74,7 @@ class FoodLogNotifier extends StateNotifier<FoodLogState> {
       // Call Gemini API
       final result = await _gemini.analyzeFood(
         imageFile: state.imageFile!,
-        dietPreference: profile.dietPreference,
+        dietPreference: profile.dietPreference ?? 'Vegan',
       );
 
       // Increment scan counter

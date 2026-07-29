@@ -16,9 +16,9 @@ class ProfileScreen extends ConsumerStatefulWidget {
 class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   // Mifflin-St Jeor Equation calculation
   double _calculateCalorieAdvice(UserProfile profile) {
-    final weight = profile.weight;
-    final height = profile.height;
-    final age = profile.age;
+    final double weight = profile.weight ?? 60.0;
+    final double height = profile.height ?? 165.0;
+    final int age = profile.age ?? 25;
     final isMale = profile.gender == 'Pria';
 
     double bmr = (10 * weight) + (6.25 * height) - (5 * age);
@@ -32,8 +32,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   }
 
   double _calculateBmi(UserProfile profile) {
-    final weight = profile.weight;
-    final heightInMeters = profile.height / 100.0;
+    final double weight = profile.weight ?? 60.0;
+    final double heightInMeters = (profile.height ?? 165.0) / 100.0;
     return weight / (heightInMeters * heightInMeters);
   }
 
