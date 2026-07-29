@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:newveg/core/theme/app_theme.dart';
 import 'package:newveg/features/community/presentation/screens/create_group_dialog.dart';
+import 'package:newveg/features/community/presentation/providers/community_provider.dart';
+import 'package:newveg/features/community/presentation/screens/comments_bottom_sheet.dart';
 
 class CommunityScreen extends ConsumerStatefulWidget {
   const CommunityScreen({super.key});
@@ -121,111 +124,178 @@ class _DiscoverFeedTab extends ConsumerStatefulWidget {
 }
 
 class _DiscoverFeedTabState extends ConsumerState<_DiscoverFeedTab> {
-  final List<Map<String, dynamic>> _mockPosts = [
-    {
-      'id': 1,
-      'userName': 'Ahmad Fauzi',
-      'userAvatar': 'leaf',
-      'foodName': 'Gado-Gado Spesial Tempe',
-      'imageUrl': 'https://images.unsplash.com/photo-1540420773420-3366772f4999?auto=format&fit=crop&q=80&w=400',
-      'calories': 380,
-      'likesCount': 12,
-      'isLiked': false,
-    },
-    {
-      'id': 2,
-      'userName': 'Maria Angelina',
-      'userAvatar': 'tulip',
-      'foodName': 'Bowl Salad Alpukat & Wijen',
-      'imageUrl': 'https://images.unsplash.com/photo-1498837167922-ddd27525d352?auto=format&fit=crop&q=80&w=400',
-      'calories': 290,
-      'likesCount': 24,
-      'isLiked': true,
+  final ScrollController _scrollController = ScrollController();
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController.addListener(_onScroll);
+  }
+
+  void _onScroll() {
+    if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent - 200) {
+      ref.read(communityFeedProvider.notifier).fetchFeed();
     }
-  ];
+  }
+
+  void _showComments(int postId) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) {
+        return SizedBox(
+          height: MediaQuery.of(context).size.height * 0.75,
+          child: CommentsBottomSheet(postId: postId),
+        );
+      },
+    );
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
+    final state = ref.watch(communityFeedProvider);
     final theme = Theme.of(context);
 
-    return ListView.builder(
-      padding: const EdgeInsets.all(16),
-      itemCount: _mockPosts.length,
-      itemBuilder: (context, index) {
-        final post = _mockPosts[index];
-        final isLiked = post['isLiked'] as bool;
+    if (state.posts.isEmpty && state.isLoading) {
+      return const Center(child: CircularProgressIndicator(color: AppColors.primary));
+    }
 
-        return Card(
-          elevation: 0,
-          margin: const EdgeInsets.only(bottom: 16),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20),
-            side: const BorderSide(color: AppColors.divider),
-          ),
+    if (state.posts.isEmpty && state.errorMessage != null) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(20.0),
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              // User header
-              ListTile(
-                leading: CircleAvatar(
-                  backgroundColor: AppColors.surfaceVariant,
-                  child: const Icon(Icons.person, color: AppColors.primary),
-                ),
-                title: Text(post['userName'] as String, style: const TextStyle(fontWeight: FontWeight.bold)),
-                subtitle: const Text('Membagikan resep makan siang', style: TextStyle(fontSize: 11)),
+              Text(state.errorMessage!, textAlign: TextAlign.center),
+              const SizedBox(height: 12),
+              ElevatedButton(
+                onPressed: () => ref.read(communityFeedProvider.notifier).fetchFeed(isRefresh: true),
+                child: const Text('Coba Lagi'),
               ),
-              // Post Image
-              ClipRRect(
-                child: Image.network(
-                  post['imageUrl'] as String,
-                  width: double.infinity,
-                  height: 220,
-                  fit: BoxFit.cover,
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      post['foodName'] as String,
-                      style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      'Estimasi AI: ${post['calories']} kkal',
-                      style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
-                    ),
-                    const Divider(height: 24),
-                    Row(
-                      children: [
-                        IconButton(
-                          icon: Icon(
-                            isLiked ? Icons.favorite_rounded : Icons.favorite_border_rounded,
-                            color: isLiked ? AppColors.error : AppColors.textHint,
-                          ),
-                          onPressed: () {
-                            setState(() {
-                              post['isLiked'] = !isLiked;
-                              post['likesCount'] = (post['likesCount'] as int) + (isLiked ? -1 : 1);
-                            });
-                          },
-                        ),
-                        Text('${post['likesCount']} Suka', style: const TextStyle(fontWeight: FontWeight.bold)),
-                        const SizedBox(width: 24),
-                        const Icon(Icons.comment_outlined, color: AppColors.textHint),
-                        const SizedBox(width: 8),
-                        const Text('3 Komentar', style: TextStyle(fontWeight: FontWeight.bold)),
-                      ],
-                    )
-                  ],
-                ),
-              )
             ],
           ),
-        );
-      },
+        ),
+      );
+    }
+
+    return RefreshIndicator(
+      onRefresh: () => ref.read(communityFeedProvider.notifier).fetchFeed(isRefresh: true),
+      color: AppColors.primary,
+      child: ListView.builder(
+        controller: _scrollController,
+        padding: const EdgeInsets.all(16),
+        itemCount: state.posts.length + (state.hasReachedMax ? 0 : 1),
+        itemBuilder: (context, index) {
+          if (index >= state.posts.length) {
+            return const Center(
+              child: Padding(
+                padding: EdgeInsets.symmetric(vertical: 16.0),
+                child: CircularProgressIndicator(color: AppColors.primary),
+              ),
+            );
+          }
+
+          final post = state.posts[index];
+
+          return Card(
+            elevation: 0,
+            margin: const EdgeInsets.only(bottom: 16),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20),
+              side: const BorderSide(color: AppColors.divider),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // User header
+                ListTile(
+                  leading: CircleAvatar(
+                    backgroundColor: AppColors.surfaceVariant,
+                    backgroundImage: post.authorAvatar.isNotEmpty
+                        ? CachedNetworkImageProvider(post.authorAvatar)
+                        : null,
+                    child: post.authorAvatar.isEmpty
+                        ? const Icon(Icons.person, color: AppColors.primary)
+                        : null,
+                  ),
+                  title: Text(post.authorName, style: const TextStyle(fontWeight: FontWeight.bold)),
+                  subtitle: Text(
+                    post.createdAt,
+                    style: const TextStyle(fontSize: 11, color: AppColors.textHint),
+                  ),
+                ),
+                
+                // Post Image
+                if (post.imageUrl.isNotEmpty)
+                  ClipRRect(
+                    child: CachedNetworkImage(
+                      imageUrl: post.imageUrl,
+                      width: double.infinity,
+                      height: 240,
+                      fit: BoxFit.cover,
+                      placeholder: (context, url) => Container(
+                        height: 240,
+                        color: AppColors.surfaceVariant,
+                        child: const Center(
+                          child: CircularProgressIndicator(color: AppColors.primary),
+                        ),
+                      ),
+                      errorWidget: (context, url, error) => Container(
+                        height: 240,
+                        color: AppColors.surfaceVariant,
+                        child: const Icon(Icons.broken_image_rounded, size: 48, color: AppColors.textHint),
+                      ),
+                    ),
+                  ),
+                  
+                Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      if (post.caption.isNotEmpty) ...[
+                        Text(
+                          post.caption,
+                          style: theme.textTheme.bodyMedium?.copyWith(height: 1.4),
+                        ),
+                        const Divider(height: 24),
+                      ],
+                      Row(
+                        children: [
+                          IconButton(
+                            icon: Icon(
+                              post.isLikedByMe ? Icons.favorite_rounded : Icons.favorite_border_rounded,
+                              color: post.isLikedByMe ? AppColors.error : AppColors.textHint,
+                            ),
+                            onPressed: () {
+                              ref.read(communityFeedProvider.notifier).toggleLike(post.id);
+                            },
+                          ),
+                          Text('${post.likesCount} Suka', style: const TextStyle(fontWeight: FontWeight.bold)),
+                          const SizedBox(width: 24),
+                          IconButton(
+                            icon: const Icon(Icons.comment_outlined, color: AppColors.textHint),
+                            onPressed: () => _showComments(post.id),
+                          ),
+                          Text('${post.commentsCount} Komentar', style: const TextStyle(fontWeight: FontWeight.bold)),
+                        ],
+                      )
+                    ],
+                  ),
+                )
+              ],
+            ),
+          );
+        },
+      ),
     );
   }
 }

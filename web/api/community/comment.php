@@ -12,8 +12,35 @@ require_once __DIR__ . '/../../config/cors.php';
 $user = requireAuth();
 $userId = $user['user_id'];
 
+if ($_SERVER['REQUEST_METHOD'] === 'GET') {
+    if (empty($_GET['post_id'])) {
+        sendError('Missing required parameter: post_id.');
+    }
+    $postId = intval($_GET['post_id']);
+    $db = getDatabaseConnection();
+    try {
+        $commentStmt = $db->prepare("
+            SELECT 
+                c.id, c.comment_text, c.created_at,
+                u.id as user_id, u.full_name as comment_author_name, u.is_premium as comment_author_is_premium
+            FROM comments c
+            JOIN users u ON c.user_id = u.id
+            WHERE c.post_id = ?
+            ORDER BY c.created_at ASC
+        ");
+        $commentStmt->execute([$postId]);
+        $comments = $commentStmt->fetchAll();
+        sendResponse(true, 'Comments fetched successfully.', [
+            'comments' => $comments
+        ]);
+        exit;
+    } catch (PDOException $e) {
+        sendError('Database error: ' . $e->getMessage(), 500);
+    }
+}
+
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    sendError('Method not allowed. Use POST.', 405);
+    sendError('Method not allowed. Use GET or POST.', 405);
 }
 
 $input = json_decode(file_get_contents('php://input'), true);
