@@ -1,0 +1,36 @@
+name: newveg
+description: "mHealth Plant-Based Diet Application"
+publish_to: 'none'
+version: 0.1.0+1
+
+environment:
+  sdk: ^3.12.0
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_riverpod: ^2.6.1
+  drift: ^2.22.1
+  sqlite3_flutter_libs: ^0.5.28
+  path_provider: ^2.1.5
+  path: ^1.9.1
+  google_fonts: ^6.2.1
+  google_generative_ai: ^0.4.0
+  image_picker: ^1.0.7
+  lottie: ^3.1.0
+  intl: ^0.19.0
+  flutter_dotenv: ^5.2.1
+  connectivity_plus: ^6.0.3
+  share_plus: any
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+  drift_dev: ^2.22.2
+  build_runner: ^2.4.14
+
+flutter:
+  uses-material-design: true
+  assets:
+    - .env

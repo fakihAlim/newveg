@@ -1,0 +1,8 @@
+# Disable PHP execution inside the uploads folder to prevent remote shell execution vulnerabilities
+<FilesMatch "\.(php|php3|php4|php5|php7|php8|phtml|pl|py|jsp|asp|sh|cgi)$">
+    Order Deny,Allow
+    Deny from all
+</FilesMatch>
+
+# Allow only standard image / media type uploads
+Options -Indexes

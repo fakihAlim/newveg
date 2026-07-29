@@ -1,0 +1,41 @@
+# Nginx Configuration Example for VPS Deployment
+# Copy these directives inside your server block in /etc/nginx/sites-available/newveg
+
+server {
+    listen 80;
+    server_name newveg.test www.newveg.test; # Replace with your domain or IP
+
+    root /var/www/newveg;
+    index index.php index.html;
+
+    charset utf-8;
+
+    # CORS & Clean URL rewrite for REST API endpoints
+    location / {
+        try_files $uri $uri/ $uri.php$is_args$args;
+    }
+
+    # Block access to git/env files
+    location ~ /\.(?!well-known).* {
+        deny all;
+    }
+
+    # Security: Disable PHP execution inside upload directories
+    location ~* ^/uploads/.*\.php$ {
+        deny all;
+    }
+
+    # FastCGI PHP 8.3 execution block
+    location ~ \.php$ {
+        include snippets/fastcgi-php.conf;
+        fastcgi_pass unix:/var/run/php/php8.3-fpm.sock;
+        fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+        include fastcgi_params;
+    }
+
+    # Cache optimization for assets and uploaded files
+    location ~* \.(jpg|jpeg|png|gif|ico|css|js|webp)$ {
+        expires 30d;
+        add_header Cache-Control "public, no-transform";
+    }
+}
