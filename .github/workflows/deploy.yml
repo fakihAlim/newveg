@@ -23,7 +23,7 @@ jobs:
           script: |
             echo "Starting deployment..."
             # Navigate to the project root directory on your VPS
-            cd /var/www/newveg
+            cd /home/jaya/htdocs/yodi.my.id/veg
             
             # Fetch the latest code from GitHub
             git fetch --all
