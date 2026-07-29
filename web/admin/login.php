@@ -67,52 +67,55 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             display: flex;
             align-items: center;
             justify-content: center;
-            background: radial-gradient(circle at 10% 20%, rgb(15, 23, 42) 0%, rgb(9, 15, 28) 90.1%);
+            background-color: #f8fafc;
         }
         .login-card {
             width: 100%;
             max-width: 420px;
-            padding: 35px;
-            border-radius: 20px;
+            padding: 30px;
+            border-radius: 12px;
+            background-color: #ffffff;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -4px rgba(0, 0, 0, 0.05);
         }
     </style>
 </head>
 <body>
 
-<div class="login-card glass-card animated-fade">
+<div class="login-card animated-fade">
     <div class="text-center mb-4">
-        <div class="rounded-circle bg-teal-glow d-inline-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px;">
-            <i class="bi bi-egg-fried fs-1 text-teal" style="color: #06b6d4;"></i>
+        <div class="rounded-circle bg-teal-glow d-inline-flex align-items-center justify-content-center mb-3" style="width: 54px; height: 54px;">
+            <i class="bi bi-egg-fried fs-2 text-teal" style="color: #0d9488;"></i>
         </div>
-        <h3 class="fw-bold mb-1">Welcome Back</h3>
+        <h4 class="fw-bold mb-1">Welcome Back</h4>
         <p class="text-secondary fs-14">NewVeg Plant-Based CMS Portal</p>
     </div>
 
     <?php if (!empty($error)): ?>
-        <div class="alert alert-danger d-flex align-items-center mb-4 py-2 border-0 bg-danger bg-opacity-10 text-danger" role="alert" style="border-radius: 10px;">
-            <i class="bi bi-exclamation-triangle-fill me-2 fs-5"></i>
+        <div class="alert alert-danger d-flex align-items-center mb-4 py-2 border-0 bg-danger bg-opacity-10 text-danger" role="alert" style="border-radius: 8px; font-size: 14px;">
+            <i class="bi bi-exclamation-triangle-fill me-2 fs-6"></i>
             <div><?= htmlspecialchars($error) ?></div>
         </div>
     <?php endif; ?>
 
     <form method="POST" action="login.php">
         <div class="mb-3">
-            <label for="email" class="form-label text-secondary fw-semibold">Email Address</label>
+            <label for="email" class="form-label text-secondary fw-semibold fs-14">Email Address</label>
             <div class="input-group">
-                <span class="input-group-text bg-dark border-secondary border-opacity-10 text-secondary"><i class="bi bi-envelope"></i></span>
-                <input type="email" class="form-control border-opacity-10" id="email" name="email" required placeholder="admin@aa.com" value="<?= htmlspecialchars($email ?? '') ?>">
+                <span class="input-group-text bg-light border-light-subtle text-secondary"><i class="bi bi-envelope"></i></span>
+                <input type="email" class="form-control" id="email" name="email" required placeholder="admin@aa.com" value="<?= htmlspecialchars($email ?? '') ?>">
             </div>
         </div>
 
         <div class="mb-4">
-            <label for="password" class="form-label text-secondary fw-semibold">Password</label>
+            <label for="password" class="form-label text-secondary fw-semibold fs-14">Password</label>
             <div class="input-group">
-                <span class="input-group-text bg-dark border-secondary border-opacity-10 text-secondary"><i class="bi bi-lock"></i></span>
-                <input type="password" class="form-control border-opacity-10" id="password" name="password" required placeholder="••••••••">
+                <span class="input-group-text bg-light border-light-subtle text-secondary"><i class="bi bi-lock"></i></span>
+                <input type="password" class="form-control" id="password" name="password" required placeholder="••••••••">
             </div>
         </div>
 
-        <button type="submit" class="btn btn-custom w-100 py-2.5">Sign In to Dashboard</button>
+        <button type="submit" class="btn btn-custom w-100 py-2">Sign In to Dashboard</button>
     </form>
 
     <div class="text-center mt-4">
