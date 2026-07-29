@@ -1,0 +1,36 @@
+name: Deploy Web Application to VPS
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Deploy to VPS via SSH
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: 22
+          script: |
+            echo "Starting deployment..."
+            # Navigate to the project root directory on your VPS
+            cd /var/www/newveg
+            
+            # Fetch the latest code from GitHub
+            git fetch --all
+            git reset --hard origin/main
+            
+            # Update permissions for the uploads directory
+            chmod -R 755 web/uploads
+            chown -R www-data:www-data web/uploads
+            
+            echo "Deployment completed successfully!"
