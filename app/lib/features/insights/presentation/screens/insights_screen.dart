@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:newveg/core/theme/app_theme.dart';
 import 'package:newveg/features/insights/presentation/screens/myth_detail_screen.dart';
 import 'package:newveg/features/insights/presentation/screens/recipe_detail_screen.dart';
+import 'package:newveg/features/insights/presentation/screens/news_detail_screen.dart';
 import 'package:newveg/features/content/presentation/providers/content_provider.dart';
 
 class InsightsScreen extends StatelessWidget {
@@ -53,16 +54,31 @@ class InsightsScreen extends StatelessWidget {
   }
 }
 
+// Helper to safely parse numeric values from dynamic (which could be string or num)
+int _safeParseInt(dynamic value) {
+  if (value == null) return 0;
+  if (value is num) return value.toInt();
+  if (value is String) {
+    return double.tryParse(value)?.toInt() ?? int.tryParse(value) ?? 0;
+  }
+  return 0;
+}
+
 // ---------------------------------------------------------------------------
 // Myth vs Fact Card Widget
 // ---------------------------------------------------------------------------
-class _MythFactCard extends StatelessWidget {
+class _MythFactCard extends ConsumerStatefulWidget {
   const _MythFactCard();
 
   @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
+  ConsumerState<_MythFactCard> createState() => _MythFactCardState();
+}
 
+class _MythFactCardState extends ConsumerState<_MythFactCard> {
+  int _selectedIndex = 0;
+
+  Widget _buildStaticCard(BuildContext context) {
+    final theme = Theme.of(context);
     return Card(
       elevation: 0,
       shape: RoundedRectangleBorder(
@@ -127,6 +143,114 @@ class _MythFactCard extends StatelessWidget {
       ),
     );
   }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final mythsAsync = ref.watch(remoteMythsProvider);
+
+    return mythsAsync.when(
+      data: (myths) {
+        if (myths.isEmpty) {
+          return _buildStaticCard(context);
+        }
+
+        if (_selectedIndex >= myths.length) {
+          _selectedIndex = 0;
+        }
+
+        final mythItem = myths[_selectedIndex];
+        final mythText = mythItem['myth_text'] as String? ?? '';
+        final truthText = mythItem['truth_text'] as String? ?? '';
+        final category = mythItem['category'] as String? ?? 'Gizi';
+
+        return Card(
+          elevation: 0,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+            side: const BorderSide(color: AppColors.divider),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                          decoration: BoxDecoration(
+                            color: AppColors.error.withValues(alpha: 0.1),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: const Text(
+                            'MITOS',
+                            style: TextStyle(
+                              color: AppColors.error,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 12,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        const Icon(Icons.help_outline_rounded, color: AppColors.textHint),
+                      ],
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.refresh_rounded, color: AppColors.primary),
+                      onPressed: () {
+                        setState(() {
+                          _selectedIndex = (_selectedIndex + 1) % myths.length;
+                        });
+                      },
+                      tooltip: 'Tampilkan Mitos Lain',
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  '“$mythText”',
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                    height: 1.4,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                SizedBox(
+                  width: double.infinity,
+                  height: 48,
+                  child: OutlinedButton(
+                    onPressed: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (_) => MythDetailScreen(
+                            myth: mythText,
+                            fact: truthText,
+                            explanation: 'Mitos mengenai "$category": $truthText. Pola makan berbasis nabati yang terencana dengan baik sangat menyehatkan dan aman untuk dijalani seluruh kelompok usia.',
+                          ),
+                        ),
+                      );
+                    },
+                    child: const Text('Buka Kebenaran ➔'),
+                  ),
+                )
+              ],
+            ),
+          ),
+        );
+      },
+      loading: () => const Card(
+        child: SizedBox(
+          height: 150,
+          child: Center(child: CircularProgressIndicator(color: AppColors.primary)),
+        ),
+      ),
+      error: (e, _) => _buildStaticCard(context),
+    );
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -166,53 +290,73 @@ class _LatestNewsSection extends ConsumerWidget {
               return Container(
                 width: 280,
                 margin: const EdgeInsets.only(right: 12),
-                decoration: BoxDecoration(
-                  color: AppColors.surface,
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: AppColors.divider),
-                ),
-                padding: const EdgeInsets.all(12),
-                child: Row(
-                  children: [
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(12),
-                      child: Image.network(
-                        imageUrl,
-                        width: 70,
-                        height: 70,
-                        fit: BoxFit.cover,
-                        errorBuilder: (_, _, _) => Container(
-                          width: 70,
-                          height: 70,
-                          color: AppColors.surfaceVariant,
-                          child: const Icon(Icons.article, color: AppColors.primary),
+                child: Card(
+                  elevation: 0,
+                  margin: EdgeInsets.zero,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                    side: const BorderSide(color: AppColors.divider),
+                  ),
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(16),
+                    onTap: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (_) => NewsDetailScreen(
+                            title: title,
+                            content: content,
+                            category: category,
+                            imageUrl: imageUrl,
+                          ),
                         ),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisAlignment: MainAxisAlignment.center,
+                      );
+                    },
+                    child: Padding(
+                      padding: const EdgeInsets.all(12),
+                      child: Row(
                         children: [
-                          Text(
-                            title,
-                            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(12),
+                            child: Image.network(
+                              imageUrl,
+                              width: 70,
+                              height: 70,
+                              fit: BoxFit.cover,
+                              errorBuilder: (_, _, _) => Container(
+                                width: 70,
+                                height: 70,
+                                color: AppColors.surfaceVariant,
+                                child: const Icon(Icons.article, color: AppColors.primary),
+                              ),
+                            ),
                           ),
-                          const SizedBox(height: 6),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text(category, style: const TextStyle(fontSize: 10, color: AppColors.primary)),
-                              const Text('3 mnt baca', style: TextStyle(fontSize: 10, color: AppColors.textHint)),
-                            ],
-                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Text(
+                                  title,
+                                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                                const SizedBox(height: 6),
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Text(category, style: const TextStyle(fontSize: 10, color: AppColors.primary)),
+                                    const Text('3 mnt baca', style: TextStyle(fontSize: 10, color: AppColors.textHint)),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          )
                         ],
                       ),
-                    )
-                  ],
+                    ),
+                  ),
                 ),
               );
             },
@@ -258,8 +402,8 @@ class _FeaturedRecipesSection extends ConsumerWidget {
           itemBuilder: (context, index) {
             final recipe = recipes[index];
             final title = recipe['title'] as String? ?? '';
-            final calories = (recipe['calories'] as num?)?.toInt() ?? 0;
-            final prepTime = (recipe['prep_time_mins'] as num?)?.toInt() ?? 0;
+            final calories = _safeParseInt(recipe['calories']);
+            final prepTime = _safeParseInt(recipe['prep_time_mins']);
             final difficulty = recipe['difficulty'] as String? ?? 'Easy';
             final rawImage = recipe['image_url'] as String? ?? '';
             final imageUrl = rawImage.startsWith('http')

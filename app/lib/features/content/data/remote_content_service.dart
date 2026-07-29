@@ -80,4 +80,22 @@ class RemoteContentService {
     }
     return [];
   }
+
+  /// Fetch myths from database
+  Future<List<Map<String, dynamic>>> fetchMyths() async {
+    try {
+      final response = await _client.get(Uri.parse(ApiEndpoints.myths));
+      if (response.statusCode == 200) {
+        final body = json.decode(response.body);
+        if (body['success'] == true && body['myths'] != null) {
+          return List<Map<String, dynamic>>.from(body['myths'] as List);
+        }
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print('RemoteContentService: Error fetching myths: $e');
+      }
+    }
+    return [];
+  }
 }

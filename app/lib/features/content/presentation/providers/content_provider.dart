@@ -36,3 +36,9 @@ final remoteQuizProvider = FutureProvider<List<Map<String, dynamic>>>((ref) asyn
   final service = ref.watch(remoteContentServiceProvider);
   return service.fetchQuizzes();
 });
+
+// Myths list provider
+final remoteMythsProvider = FutureProvider<List<Map<String, dynamic>>>((ref) async {
+  final service = ref.watch(remoteContentServiceProvider);
+  return service.fetchMyths();
+});
