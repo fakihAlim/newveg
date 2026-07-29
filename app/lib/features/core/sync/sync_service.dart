@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:newveg/core/database/app_database.dart';
 import 'package:newveg/core/database/database_provider.dart';
+import 'package:newveg/core/services/api_service.dart';
 
 /// Background Sync Engine that monitors network status and pushes local
 /// food logs and profile progress to backend server once connection is online.
@@ -45,12 +46,34 @@ class SyncService {
         if (kDebugMode) {
           print('Sync Engine: Found ${unsyncedLogs.length} unsynced food logs.');
         }
-        for (final log in unsyncedLogs) {
-          // Simulated push to backend/Firebase
-          await Future.delayed(const Duration(milliseconds: 500));
-          await _db.markFoodLogSynced(log.id);
+
+        // Initialize api connection with default demo login if token is not active
+        await apiService.login('admin@aa.com', 'admin123');
+
+        // Transform drift model to backend JSON structure
+        final logsJson = unsyncedLogs.map((log) => {
+          'food_name': log.foodName,
+          'image_url': log.imagePath,
+          'calories': log.calories,
+          'carbs': log.carbs,
+          'fats': log.fats,
+          'protein': log.protein,
+          'is_compliant': log.isPlantBased ? 1 : 0,
+          'points_earned': log.pointsEarned,
+          'created_at': log.createdAt.toIso8601String(),
+        }).toList();
+
+        final success = await apiService.syncFoodLogs(logsJson);
+        if (success) {
+          for (final log in unsyncedLogs) {
+            await _db.markFoodLogSynced(log.id);
+            if (kDebugMode) {
+              print('Sync Engine: Food log ${log.id} successfully synced to server.');
+            }
+          }
+        } else {
           if (kDebugMode) {
-            print('Sync Engine: Food log ${log.id} successfully synced to cloud.');
+            print('Sync Engine: Failed to synchronize logs to remote server.');
           }
         }
       }
