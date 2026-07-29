@@ -129,8 +129,8 @@ class CommunityFeedNotifier extends StateNotifier<CommunityFeedState> {
 
       if (response.statusCode == 200) {
         final body = json.decode(response.body);
-        if (body['success'] == true && body['data'] != null && body['data']['data'] != null) {
-          final List<dynamic> list = body['data']['data'] as List;
+        if (body['success'] == true && body['data'] != null) {
+          final List<dynamic> list = body['data'] as List;
           final List<CommunityPost> fetchedPosts = list.map((e) => CommunityPost.fromJson(e as Map<String, dynamic>)).toList();
 
           state = state.copyWith(
@@ -222,8 +222,8 @@ class CommunityFeedNotifier extends StateNotifier<CommunityFeedState> {
 
       if (response.statusCode == 200) {
         final body = json.decode(response.body);
-        if (body['success'] == true && body['data'] != null && body['data']['comments'] != null) {
-          return List<Map<String, dynamic>>.from(body['data']['comments'] as List);
+        if (body['success'] == true && body['comments'] != null) {
+          return List<Map<String, dynamic>>.from(body['comments'] as List);
         }
       }
     } catch (_) {}
