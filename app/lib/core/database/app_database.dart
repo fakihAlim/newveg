@@ -63,7 +63,7 @@ class AppDatabase extends _$AppDatabase {
         if (from < 7) {
           // Recreate user_profiles to make sure all columns (especially gender)
           // have the correct nullable constraints as defined in drift tables.
-          await m.issue('DROP TABLE IF EXISTS user_profiles;');
+          await customStatement('DROP TABLE IF EXISTS user_profiles;');
           await m.createTable(userProfiles);
         }
       },
