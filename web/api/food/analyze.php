@@ -79,5 +79,8 @@ try {
     ]);
 
 } catch (Exception $e) {
+    // Write error log for remote debugging
+    $logMessage = "[" . date('Y-m-d H:i:s') . "] " . $e->getMessage() . "\n" . $e->getTraceAsString() . "\n\n";
+    @file_put_contents(__DIR__ . '/error_log.txt', $logMessage, FILE_APPEND);
     sendError('Analysis failed: ' . $e->getMessage(), 500);
 }
