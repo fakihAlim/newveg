@@ -17,9 +17,9 @@ class NavigationWrapper extends ConsumerStatefulWidget {
   ConsumerState<NavigationWrapper> createState() => _NavigationWrapperState();
 }
 
-class _NavigationWrapperState extends ConsumerState<NavigationWrapper> {
-  int _currentIndex = 0;
+final navigationIndexProvider = StateProvider<int>((ref) => 0);
 
+class _NavigationWrapperState extends ConsumerState<NavigationWrapper> {
   late final List<Widget> _screens;
 
   @override
@@ -36,9 +36,11 @@ class _NavigationWrapperState extends ConsumerState<NavigationWrapper> {
 
   @override
   Widget build(BuildContext context) {
+    final currentIndex = ref.watch(navigationIndexProvider);
+
     return Scaffold(
       body: IndexedStack(
-        index: _currentIndex,
+        index: currentIndex,
         children: _screens,
       ),
       bottomNavigationBar: Container(
@@ -52,11 +54,9 @@ class _NavigationWrapperState extends ConsumerState<NavigationWrapper> {
           ],
         ),
         child: BottomNavigationBar(
-          currentIndex: _currentIndex,
+          currentIndex: currentIndex,
           onTap: (index) {
-            setState(() {
-              _currentIndex = index;
-            });
+            ref.read(navigationIndexProvider.notifier).state = index;
           },
           type: BottomNavigationBarType.fixed,
           backgroundColor: AppColors.surface,

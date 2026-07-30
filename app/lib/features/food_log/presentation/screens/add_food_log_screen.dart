@@ -8,6 +8,7 @@ import 'package:lottie/lottie.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../providers/food_log_provider.dart';
 import 'food_log_result_sheet.dart';
+import 'package:newveg/features/dashboard/presentation/screens/navigation_wrapper.dart';
 
 /// Screen for adding a new food log entry.
 ///
@@ -120,7 +121,8 @@ class _AddFoodLogScreenState extends ConsumerState<AddFoodLogScreen>
     );
 
     if (!mounted) return;
-    Navigator.of(context).pop(true); // Return to dashboard with refresh signal
+    ref.read(foodLogProvider.notifier).reset();
+    ref.read(navigationIndexProvider.notifier).state = 0;
   }
 
   @override

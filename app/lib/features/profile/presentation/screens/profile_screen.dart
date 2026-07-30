@@ -4,7 +4,11 @@ import 'package:newveg/core/database/database_provider.dart';
 import 'package:newveg/core/database/app_database.dart';
 import 'package:newveg/core/theme/app_theme.dart';
 import 'package:newveg/features/profile/presentation/widgets/badge_detail_dialog.dart';
-import 'package:newveg/features/insights/presentation/screens/recipe_detail_screen.dart';
+import 'package:newveg/features/profile/domain/carbon_calculator.dart';
+import 'package:newveg/features/profile/presentation/screens/edit_profile_screen.dart';
+import 'package:newveg/features/profile/presentation/screens/badges_screen.dart';
+import 'package:newveg/features/profile/presentation/screens/saved_recipes_screen.dart';
+import 'package:newveg/features/food_log/presentation/providers/food_log_provider.dart';
 
 class ProfileScreen extends ConsumerStatefulWidget {
   const ProfileScreen({super.key});
@@ -14,7 +18,6 @@ class ProfileScreen extends ConsumerStatefulWidget {
 }
 
 class _ProfileScreenState extends ConsumerState<ProfileScreen> {
-  // Mifflin-St Jeor Equation calculation
   double _calculateCalorieAdvice(UserProfile profile) {
     final double weight = profile.weight ?? 60.0;
     final double height = profile.height ?? 165.0;
@@ -27,7 +30,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     } else {
       bmr -= 161;
     }
-    // Assume sedentary activity level multiplier of 1.2
     return bmr * 1.2;
   }
 
@@ -56,9 +58,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     final db = ref.watch(databaseProvider);
     final theme = Theme.of(context);
 
-    final bookmarksFuture = ref.watch(_bookmarkedRecipesFutureProvider);
     final badgesFuture = ref.watch(_badgesFutureProvider);
-    final logsCountFuture = ref.watch(_plantLogsCountFutureProvider);
+    final todayLogsFuture = ref.watch(todayFoodLogsProvider);
 
     return Scaffold(
       appBar: AppBar(
@@ -80,33 +81,69 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           final bmiCategory = _getBmiCategory(bmi);
           final bmiColor = _getBmiColor(bmi);
           final calorieAdvice = _calculateCalorieAdvice(profile);
+          
+          final serverAvatarUrl = 'https://yodi.my.id/veg/uploads/avatars/user${profile.id}.jpg?t=${DateTime.now().millisecondsSinceEpoch}';
 
           return SingleChildScrollView(
             padding: const EdgeInsets.all(20),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // -- Header
+                // -- Header with Edit Action
                 Center(
-                  child: Column(
+                  child: Stack(
+                    alignment: Alignment.center,
                     children: [
-                      CircleAvatar(
-                        radius: 44,
-                        backgroundColor: AppColors.primary.withValues(alpha: 0.1),
-                        child: Text(
-                          profile.gender == 'Pria' ? '👨' : '👩',
-                          style: const TextStyle(fontSize: 40),
+                      Column(
+                        children: [
+                          CircleAvatar(
+                            radius: 44,
+                            backgroundColor: AppColors.primary.withValues(alpha: 0.1),
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(44),
+                              child: Image.network(
+                                serverAvatarUrl,
+                                width: 88,
+                                height: 88,
+                                fit: BoxFit.cover,
+                                errorBuilder: (context, error, stackTrace) => Text(
+                                  profile.gender == 'Pria' ? '👨' : '👩',
+                                  style: const TextStyle(fontSize: 40),
+                                ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                          Text(
+                            profile.gender == 'Pria' ? 'Bro Vegenian' : 'Sis Vegenian',
+                            style: theme.textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.bold),
+                          ),
+                          Text(
+                            profile.dietPreference ?? 'Strict Vegan',
+                            style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.bold, fontSize: 13),
+                          ),
+                        ],
+                      ),
+                      Positioned(
+                        top: 0,
+                        right: 0,
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: AppColors.primary.withValues(alpha: 0.1),
+                            shape: BoxShape.circle,
+                          ),
+                          child: IconButton(
+                            icon: const Icon(Icons.edit_rounded, color: AppColors.primary),
+                            onPressed: () {
+                              Navigator.of(context).push(
+                                MaterialPageRoute(builder: (_) => EditProfileScreen(profile: profile)),
+                              ).then((_) {
+                                setState(() {});
+                              });
+                            },
+                          ),
                         ),
-                      ),
-                      const SizedBox(height: 12),
-                      Text(
-                        profile.gender == 'Pria' ? 'Bro Vegenian' : 'Sis Vegenian',
-                        style: theme.textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.bold),
-                      ),
-                      Text(
-                        profile.dietPreference ?? 'Strict Vegan',
-                        style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.bold, fontSize: 13),
-                      ),
+                      )
                     ],
                   ),
                 ),
@@ -167,12 +204,16 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 ),
                 const SizedBox(height: 20),
 
-                // -- Carbon Footprint Card
-                logsCountFuture.when(
+                // -- Carbon Footprint Daily Impact Card
+                todayLogsFuture.when(
                   loading: () => const SizedBox(),
                   error: (_, _) => const SizedBox(),
-                  data: (count) {
-                    final co2Saved = count * 1.5;
+                  data: (logs) {
+                    final todayPlantMeals = logs.where((l) => l.isPlantBased).length;
+                    final co2Saved = CarbonCalculator.calculateDailySavings(todayPlantMeals);
+                    final trees = CarbonCalculator.calculateEquivalentTrees(co2Saved);
+                    final drivingKm = CarbonCalculator.calculateEquivalentDrivingKm(co2Saved);
+
                     return Card(
                       elevation: 0,
                       color: const Color(0xFFE8F5E9),
@@ -181,31 +222,32 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                         side: BorderSide(color: AppColors.primary.withValues(alpha: 0.1)),
                       ),
                       child: Padding(
-                        padding: const EdgeInsets.all(16),
-                        child: Row(
+                        padding: const EdgeInsets.all(20),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Container(
-                              padding: const EdgeInsets.all(12),
-                              decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle),
-                              child: const Icon(Icons.co2_rounded, color: AppColors.primary, size: 28),
+                            Row(
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.all(10),
+                                  decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle),
+                                  child: const Icon(Icons.eco_rounded, color: AppColors.primary, size: 24),
+                                ),
+                                const SizedBox(width: 12),
+                                Text(
+                                  'Eco-Savings Hari Ini 🌳',
+                                  style: theme.textTheme.titleMedium?.copyWith(
+                                    fontWeight: FontWeight.bold,
+                                    color: AppColors.primaryDark,
+                                  ),
+                                ),
+                              ],
                             ),
-                            const SizedBox(width: 16),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  const Text(
-                                    'Dampak Karbon Anda',
-                                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: AppColors.primaryDark),
-                                  ),
-                                  const SizedBox(height: 4),
-                                  Text(
-                                    'Anda menghemat ~${co2Saved.toStringAsFixed(1)} kg CO2 dengan memilih hidangan plant-based!',
-                                    style: const TextStyle(fontSize: 12, color: AppColors.textSecondary, height: 1.4),
-                                  ),
-                                ],
-                              ),
-                            )
+                            const SizedBox(height: 12),
+                            Text(
+                              'Hari ini kamu menghemat ${co2Saved.toStringAsFixed(1)} kg CO₂! Ini setara dengan menanam ${trees.toStringAsFixed(1)} pohon 🌳 atau berkendara mobil sejauh ${drivingKm.toStringAsFixed(0)} km 🚗.',
+                              style: const TextStyle(fontSize: 13, color: AppColors.textPrimary, height: 1.4),
+                            ),
                           ],
                         ),
                       ),
@@ -214,40 +256,28 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 ),
                 const SizedBox(height: 24),
 
-                // -- Etalase Lencana (Badges Grid)
-                Text('Etalase Lencana', style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
+                // -- Badges Section (Top 3 Achieved)
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text('Pencapaian Badges', style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
+                    TextButton(
+                      onPressed: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(builder: (_) => const BadgesScreen()),
+                        ).then((_) => ref.invalidate(_badgesFutureProvider));
+                      },
+                      child: const Text('Lihat Lainnya >', style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.bold)),
+                    ),
+                  ],
+                ),
                 const SizedBox(height: 12),
                 badgesFuture.when(
                   loading: () => const Center(child: CircularProgressIndicator()),
                   error: (e, _) => Text('Gagal memuat lencana: $e'),
                   data: (badgeList) {
-                    return GridView.builder(
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: 3,
-                        mainAxisSpacing: 12,
-                        crossAxisSpacing: 12,
-                        childAspectRatio: 0.85,
-                      ),
-                      itemCount: badgeList.length,
-                      itemBuilder: (context, index) {
-                        final badge = badgeList[index];
-                        return _BadgeWidget(badge: badge);
-                      },
-                    );
-                  },
-                ),
-                const SizedBox(height: 24),
-
-                // -- Bookmarked Recipes Section
-                Text('Resep yang Disimpan', style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
-                const SizedBox(height: 12),
-                bookmarksFuture.when(
-                  loading: () => const SizedBox(),
-                  error: (e, _) => Text('Gagal memuat bookmark: $e'),
-                  data: (bookmarks) {
-                    if (bookmarks.isEmpty) {
+                    final topBadges = badgeList.where((b) => b.isUnlocked).take(3).toList();
+                    if (topBadges.isEmpty) {
                       return Container(
                         width: double.infinity,
                         padding: const EdgeInsets.all(24),
@@ -258,83 +288,50 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                         ),
                         child: const Center(
                           child: Text(
-                            'Belum ada resep yang disimpan.',
+                            'Belum ada pencapaian badges.',
                             style: TextStyle(color: AppColors.textHint, fontSize: 13),
                           ),
                         ),
                       );
                     }
 
-                    return SizedBox(
-                      height: 130,
-                      child: ListView.builder(
-                        scrollDirection: Axis.horizontal,
-                        itemCount: bookmarks.length,
-                        itemBuilder: (context, index) {
-                          final bookmark = bookmarks[index];
-                          return GestureDetector(
-                            onTap: () {
-                              Navigator.of(context).push(
-                                MaterialPageRoute(
-                                  builder: (_) => RecipeDetailScreen(
-                                    recipeId: bookmark.recipeId,
-                                    title: bookmark.title,
-                                    calories: bookmark.calories,
-                                    prepTime: bookmark.prepTime,
-                                    difficulty: 'Mudah', // Default fallback
-                                    imageUrl: bookmark.imageUrl,
-                                    ingredients: const [
-                                      'Bahan resep tersimpan (Muat ulang detail resep untuk list lengkap).'
-                                    ],
-                                  ),
-                                ),
-                              ).then((_) => ref.invalidate(_bookmarkedRecipesFutureProvider));
-                            },
-                            child: Container(
-                              width: 140,
-                              margin: const EdgeInsets.only(right: 12),
-                              decoration: BoxDecoration(
-                                color: AppColors.surface,
-                                borderRadius: BorderRadius.circular(16),
-                                border: Border.all(color: AppColors.divider),
-                              ),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  ClipRRect(
-                                    borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
-                                    child: Image.network(
-                                      bookmark.imageUrl,
-                                      width: 140,
-                                      height: 70,
-                                      fit: BoxFit.cover,
-                                      errorBuilder: (_, _, _) => Container(
-                                        width: 140,
-                                        height: 70,
-                                        color: AppColors.surfaceVariant,
-                                        child: const Icon(Icons.restaurant, color: AppColors.primary),
-                                      ),
-                                    ),
-                                  ),
-                                  Padding(
-                                    padding: const EdgeInsets.all(8.0),
-                                    child: Text(
-                                      bookmark.title,
-                                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 11),
-                                      maxLines: 2,
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                  )
-                                ],
-                              ),
-                            ),
-                          );
-                        },
+                    return GridView.builder(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: 3,
+                        mainAxisSpacing: 12,
+                        crossAxisSpacing: 12,
+                        childAspectRatio: 0.85,
                       ),
+                      itemCount: topBadges.length,
+                      itemBuilder: (context, index) {
+                        final badge = topBadges[index];
+                        return _BadgeWidget(badge: badge);
+                      },
                     );
                   },
                 ),
-                const SizedBox(height: 40),
+                const SizedBox(height: 28),
+
+                // -- Saved Recipes Shortcut Row
+                Card(
+                  elevation: 0,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                    side: const BorderSide(color: AppColors.divider),
+                  ),
+                  child: ListTile(
+                    leading: const Icon(Icons.bookmark_rounded, color: AppColors.primary),
+                    title: const Text('Resep Tersimpan', style: TextStyle(fontWeight: FontWeight.bold)),
+                    trailing: const Icon(Icons.chevron_right_rounded),
+                    onTap: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(builder: (_) => const SavedRecipesScreen()),
+                      );
+                    },
+                  ),
+                ),
               ],
             ),
           );
@@ -344,28 +341,11 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   }
 }
 
-// ---------------------------------------------------------------------------
-// Private Providers
-// ---------------------------------------------------------------------------
-final _bookmarkedRecipesFutureProvider = FutureProvider<List<BookmarkedRecipe>>((ref) {
-  final db = ref.watch(databaseProvider);
-  return db.getBookmarkedRecipes();
-});
-
 final _badgesFutureProvider = FutureProvider<List<Badge>>((ref) {
   final db = ref.watch(databaseProvider);
   return db.getAllBadges();
 });
 
-final _plantLogsCountFutureProvider = FutureProvider<int>((ref) async {
-  final db = ref.watch(databaseProvider);
-  final allLogs = await db.getAllFoodLogs();
-  return allLogs.where((l) => l.isPlantBased).length;
-});
-
-// ---------------------------------------------------------------------------
-// Badge Card Widget
-// ---------------------------------------------------------------------------
 class _BadgeWidget extends StatelessWidget {
   final Badge badge;
   const _BadgeWidget({required this.badge});
@@ -390,7 +370,6 @@ class _BadgeWidget extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              // Grayscale if locked
               ColorFiltered(
                 colorFilter: ColorFilter.mode(
                   badge.isUnlocked ? Colors.transparent : Colors.grey,

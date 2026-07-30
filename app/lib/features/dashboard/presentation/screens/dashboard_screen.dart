@@ -9,7 +9,7 @@ import '../../../../core/theme/app_theme.dart';
 import '../../../food_log/presentation/providers/food_log_provider.dart';
 import '../../../discover/presentation/screens/discover_screen.dart';
 import '../../../profile/presentation/screens/settings_screen.dart';
-import '../../../community/presentation/providers/community_provider.dart';
+import '../../../community/presentation/widgets/share_log_dialog.dart';
 
 /// Active date state provider for horizontal calendar filtering
 final selectedDateProvider = StateProvider<DateTime>((ref) => DateTime.now());
@@ -577,79 +577,9 @@ class _FoodLogListItem extends ConsumerWidget {
   const _FoodLogListItem({required this.log});
 
   void _showShareDialog(BuildContext context, WidgetRef ref, int foodLogId) {
-    final textController = TextEditingController();
     showDialog(
       context: context,
-      builder: (context) {
-        return AlertDialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-          title: const Text('Bagikan ke Komunitas 🌿'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text(
-                'Tulis caption menarik untuk postingan makan sehat Anda:',
-                style: TextStyle(fontSize: 12, color: AppColors.textSecondary),
-              ),
-              const SizedBox(height: 12),
-              TextField(
-                controller: textController,
-                maxLines: 3,
-                decoration: const InputDecoration(
-                  hintText: 'Makan siang sehat hari ini... 🥑',
-                  border: OutlineInputBorder(),
-                ),
-              ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('Batal'),
-            ),
-            ElevatedButton(
-              onPressed: () async {
-                final caption = textController.text.trim();
-                Navigator.pop(context); // Close share dialog
-                
-                // Show loading
-                showDialog(
-                  context: context,
-                  barrierDismissible: false,
-                  builder: (context) => const Center(
-                    child: CircularProgressIndicator(color: AppColors.primary),
-                  ),
-                );
-
-                final success = await ref
-                    .read(communityFeedProvider.notifier)
-                    .shareFoodLog(foodLogId, caption);
-
-                if (context.mounted) {
-                  Navigator.pop(context); // Close loading indicator
-                  if (success) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Berhasil dibagikan ke Feed Komunitas!'),
-                        backgroundColor: AppColors.primary,
-                      ),
-                    );
-                  } else {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Gagal membagikan postingan.'),
-                        backgroundColor: AppColors.error,
-                      ),
-                    );
-                  }
-                }
-              },
-              child: const Text('Kirim'),
-            ),
-          ],
-        );
-      },
+      builder: (context) => ShareLogDialog(foodLogId: foodLogId),
     );
   }
 

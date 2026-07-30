@@ -28,6 +28,20 @@ $totalPoints = isset($input['total_points']) ? intval($input['total_points']) : 
 
 $db = getDatabaseConnection();
 
+// Handle Base64 avatar upload if present
+if (!empty($input['avatar_base64'])) {
+    try {
+        $avatarData = base64_decode($input['avatar_base64']);
+        $avatarDir = __DIR__ . '/../../uploads/avatars';
+        if (!is_dir($avatarDir)) {
+            mkdir($avatarDir, 0777, true);
+        }
+        file_put_contents($avatarDir . '/user' . $userId . '.jpg', $avatarData);
+    } catch (Exception $e) {
+        // Silent fail or log
+    }
+}
+
 try {
     // Build dynamic update query
     $fields = [];
