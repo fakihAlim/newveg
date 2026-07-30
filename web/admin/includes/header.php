@@ -49,6 +49,9 @@ $currentPage = basename($_SERVER['PHP_SELF']);
             <li class="<?= $currentPage === 'community.php' ? 'active' : '' ?>">
                 <a href="community.php">Community Feed</a>
             </li>
+            <li class="<?= $currentPage === 'reports.php' ? 'active' : '' ?>">
+                <a href="reports.php">Reports Moderation</a>
+            </li>
             <li class="<?= $currentPage === 'settings.php' ? 'active' : '' ?>">
                 <a href="settings.php">System Config</a>
             </li>

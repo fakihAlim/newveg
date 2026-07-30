@@ -2,15 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:newveg/core/theme/app_theme.dart';
 import 'package:newveg/core/services/notification_service.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:newveg/features/auth/presentation/providers/auth_provider.dart';
 
-class SettingsScreen extends StatefulWidget {
+class SettingsScreen extends ConsumerStatefulWidget {
   const SettingsScreen({super.key});
 
   @override
-  State<SettingsScreen> createState() => _SettingsScreenState();
+  ConsumerState<SettingsScreen> createState() => _SettingsScreenState();
 }
 
-class _SettingsScreenState extends State<SettingsScreen> {
+class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   final NotificationService _notificationService = NotificationService();
   late SharedPreferences _prefs;
   bool _loading = true;
@@ -332,6 +334,20 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       ],
                     ),
                   ),
+                  const SizedBox(height: 32),
+                  SizedBox(
+                    width: double.infinity,
+                    height: 50,
+                    child: OutlinedButton(
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: AppColors.error,
+                        side: const BorderSide(color: AppColors.error),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                      ),
+                      onPressed: () => _confirmDeleteAccount(context),
+                      child: const Text('Hapus Akun Saya', style: TextStyle(fontWeight: FontWeight.bold)),
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -426,6 +442,62 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ],
           ],
         ),
+      ),
+    );
+  }
+
+  void _confirmDeleteAccount(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Hapus Akun Permanen ⚠️'),
+        content: const Text(
+          'Apakah Anda yakin ingin menghapus akun Anda secara permanen? Semua data pribadi, log makanan, riwayat poin, dan postingan komunitas Anda akan dihapus dari server kami dan tidak dapat dikembalikan.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Batal'),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: AppColors.error),
+            onPressed: () async {
+              Navigator.pop(context); // Close confirm dialog
+              
+              // Show loading
+              showDialog(
+                context: context,
+                barrierDismissible: false,
+                builder: (context) => const Center(
+                  child: CircularProgressIndicator(color: AppColors.primary),
+                ),
+              );
+
+              final success = await ref.read(authProvider.notifier).deleteAccount();
+
+              if (context.mounted) {
+                Navigator.pop(context); // Close loading
+                if (success) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Akun Anda berhasil dihapus.'),
+                      backgroundColor: AppColors.primary,
+                    ),
+                  );
+                  Navigator.of(context).popUntil((route) => route.isFirst);
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Gagal menghapus akun.'),
+                      backgroundColor: AppColors.error,
+                    ),
+                  );
+                }
+              }
+            },
+            child: const Text('Hapus Akun', style: TextStyle(color: Colors.white)),
+          ),
+        ],
       ),
     );
   }

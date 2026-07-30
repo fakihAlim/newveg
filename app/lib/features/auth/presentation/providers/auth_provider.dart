@@ -4,6 +4,9 @@ import 'package:newveg/core/database/app_database.dart';
 import 'package:newveg/core/database/database_provider.dart';
 import 'package:newveg/features/auth/data/auth_api_service.dart';
 import 'package:newveg/core/services/api_service.dart';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
+import 'package:newveg/core/network/api_endpoints.dart';
 
 /// Representation of the Authentication States
 class AuthState {
@@ -141,6 +144,37 @@ class AuthNotifier extends StateNotifier<AuthState> {
       state = AuthState(errorMessage: response['message'] ?? 'Pendaftaran gagal.');
       return false;
     }
+  }
+
+  /// Delete user account permanently from server and clear all local credentials
+  Future<bool> deleteAccount() async {
+    final activeToken = state.token;
+    if (activeToken == null) return false;
+
+    state = state.copyWith(isLoading: true);
+    try {
+      final response = await http.post(
+        Uri.parse(ApiEndpoints.deleteAccount),
+        headers: {
+          'Authorization': 'Bearer $activeToken',
+          'Content-Type': 'application/json',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final body = json.decode(response.body);
+        if (body['success'] == true) {
+          // Clear Drift SQLite completely
+          await _db.clearDatabase();
+          // Clear local State notifier
+          state = const AuthState();
+          apiService.setToken(null);
+          return true;
+        }
+      }
+    } catch (_) {}
+    state = state.copyWith(isLoading: false, errorMessage: 'Gagal menghapus akun.');
+    return false;
   }
 
   /// Sign out and clear credentials

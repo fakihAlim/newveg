@@ -22,4 +22,9 @@ class ApiEndpoints {
   static const String likePost = '$baseUrl/community/like.php';
   static const String commentPost = '$baseUrl/community/comment.php';
   static const String shareLog = '$baseUrl/community/share_log.php';
+  static const String reportPost = '$baseUrl/community/report.php';
+  static const String blockUser = '$baseUrl/community/block.php';
+  
+  // Auth Compliance
+  static const String deleteAccount = '$baseUrl/auth/delete_account.php';
 }

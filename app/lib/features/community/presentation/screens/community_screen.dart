@@ -231,6 +231,26 @@ class _DiscoverFeedTabState extends ConsumerState<_DiscoverFeedTab> {
                     post.createdAt,
                     style: const TextStyle(fontSize: 11, color: AppColors.textHint),
                   ),
+                  trailing: PopupMenuButton<String>(
+                    icon: const Icon(Icons.more_vert_rounded),
+                    onSelected: (value) {
+                      if (value == 'report') {
+                        _showReportDialog(context, ref, post.id);
+                      } else if (value == 'block') {
+                        _showBlockConfirmDialog(context, ref, post.authorId, post.authorName);
+                      }
+                    },
+                    itemBuilder: (context) => [
+                      const PopupMenuItem(
+                        value: 'report',
+                        child: Text('Laporkan Postingan'),
+                      ),
+                      const PopupMenuItem(
+                        value: 'block',
+                        child: Text('Blokir Pengguna'),
+                      ),
+                    ],
+                  ),
                 ),
                 
                 // Post Image
@@ -295,6 +315,96 @@ class _DiscoverFeedTabState extends ConsumerState<_DiscoverFeedTab> {
             ),
           );
         },
+      ),
+    );
+  }
+
+  void _showReportDialog(BuildContext context, WidgetRef ref, int postId) {
+    String selectedReason = 'Spam';
+    final reasons = ['Spam', 'Konten Tidak Layak', 'Pelecehan', 'Ujaran Kebencian', 'Lainnya'];
+    
+    showDialog(
+      context: context,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setModalState) => AlertDialog(
+          title: const Text('Laporkan Postingan'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: reasons.map((reason) => ListTile(
+              title: Text(reason),
+              leading: Icon(
+                selectedReason == reason
+                    ? Icons.radio_button_checked_rounded
+                    : Icons.radio_button_off_rounded,
+                color: AppColors.primary,
+              ),
+              dense: true,
+              onTap: () {
+                setModalState(() {
+                  selectedReason = reason;
+                });
+              },
+            )).toList(),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Batal'),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                Navigator.pop(context); // Close dialog
+                final success = await ref
+                    .read(communityFeedProvider.notifier)
+                    .reportPost(postId, selectedReason);
+
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(success ? 'Postingan berhasil dilaporkan.' : 'Gagal melaporkan postingan.'),
+                      backgroundColor: success ? AppColors.primary : AppColors.error,
+                    ),
+                  );
+                }
+              },
+              child: const Text('Laporkan'),
+            )
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showBlockConfirmDialog(BuildContext context, WidgetRef ref, int authorId, String authorName) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Blokir Pengguna'),
+        content: Text('Apakah Anda yakin ingin memblokir $authorName? Anda tidak akan melihat postingan mereka lagi.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Batal'),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              Navigator.pop(context); // Close dialog
+              final success = await ref
+                  .read(communityFeedProvider.notifier)
+                  .blockUser(authorId);
+
+              if (context.mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(success ? '$authorName telah diblokir.' : 'Gagal memblokir pengguna.'),
+                    backgroundColor: success ? AppColors.primary : AppColors.error,
+                  ),
+                );
+              }
+            },
+            child: const Text('Blokir'),
+          )
+        ],
       ),
     );
   }

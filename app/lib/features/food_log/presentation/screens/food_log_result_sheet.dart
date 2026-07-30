@@ -165,6 +165,17 @@ class FoodLogResultSheet extends StatelessWidget {
               child: const Text('Kembali ke Dashboard'),
             ),
           ),
+          const SizedBox(height: 16),
+          // -- Health Disclaimer
+          const Text(
+            'Estimasi AI untuk panduan nutrisi, bukan nasihat medis.',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: 10,
+              color: AppColors.textHint,
+              fontStyle: FontStyle.italic,
+            ),
+          ),
         ],
       ),
     );

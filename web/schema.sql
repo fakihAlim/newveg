@@ -152,3 +152,25 @@ INSERT INTO `myths_facts` (`myth_text`, `truth_text`, `category`) VALUES
 -- Initial Quizzes
 INSERT INTO `quizzes` (`question`, `option_a`, `option_b`, `option_c`, `option_d`, `correct_option`, `explanation`, `points_reward`) VALUES
 ('Which of the following plant foods has the highest protein content per 100g?', 'Lentils', 'Tofu', 'Tempeh', 'Quinoa', 'C', 'Tempeh typically contains around 19g of protein per 100g, which is higher than lentils (9g), tofu (8g), and quinoa (4.4g).', 15);
+
+-- 11. UGC Moderation / Reports Table
+CREATE TABLE IF NOT EXISTS `community_reports` (
+  `id` INT AUTO_INCREMENT PRIMARY KEY,
+  `post_id` INT NOT NULL,
+  `user_id` INT NOT NULL,
+  `reason` VARCHAR(255) NOT NULL,
+  `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (`post_id`) REFERENCES `community_posts`(`id`) ON DELETE CASCADE,
+  FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- 12. Blocked Users Table
+CREATE TABLE IF NOT EXISTS `blocked_users` (
+  `id` INT AUTO_INCREMENT PRIMARY KEY,
+  `user_id` INT NOT NULL,
+  `blocked_user_id` INT NOT NULL,
+  `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE KEY `unique_block` (`user_id`, `blocked_user_id`),
+  FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON DELETE CASCADE,
+  FOREIGN KEY (`blocked_user_id`) REFERENCES `users`(`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

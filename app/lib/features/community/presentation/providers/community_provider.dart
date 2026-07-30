@@ -6,6 +6,7 @@ import 'package:newveg/features/auth/presentation/providers/auth_provider.dart';
 
 class CommunityPost {
   final int id;
+  final int authorId;
   final String authorName;
   final String authorAvatar;
   final String imageUrl;
@@ -17,6 +18,7 @@ class CommunityPost {
 
   CommunityPost({
     required this.id,
+    required this.authorId,
     required this.authorName,
     required this.authorAvatar,
     required this.imageUrl,
@@ -30,6 +32,7 @@ class CommunityPost {
   factory CommunityPost.fromJson(Map<String, dynamic> json) {
     return CommunityPost(
       id: json['id'] is int ? json['id'] as int : int.tryParse(json['id'].toString()) ?? 0,
+      authorId: json['authorId'] is int ? json['authorId'] as int : int.tryParse(json['authorId'].toString()) ?? 0,
       authorName: json['authorName'] as String? ?? 'Anonymous',
       authorAvatar: json['authorAvatar'] as String? ?? '',
       imageUrl: json['imageUrl'] as String? ?? '',
@@ -48,6 +51,7 @@ class CommunityPost {
   }) {
     return CommunityPost(
       id: id,
+      authorId: authorId,
       authorName: authorName,
       authorAvatar: authorAvatar,
       imageUrl: imageUrl,
@@ -289,6 +293,61 @@ class CommunityFeedNotifier extends StateNotifier<CommunityFeedState> {
         final body = json.decode(response.body);
         if (body['success'] == true) {
           // Refresh the community feed so the new post appears instantly
+          await fetchFeed(isRefresh: true);
+          return true;
+        }
+      }
+    } catch (_) {}
+    return false;
+  }
+
+  /// Report a community post
+  Future<bool> reportPost(int postId, String reason) async {
+    final token = _getAuthToken();
+    if (token == null) return false;
+
+    try {
+      final response = await _client.post(
+        Uri.parse(ApiEndpoints.reportPost),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+        },
+        body: json.encode({
+          'post_id': postId,
+          'reason': reason,
+        }),
+      );
+
+      if (response.statusCode == 201) {
+        final body = json.decode(response.body);
+        return body['success'] == true;
+      }
+    } catch (_) {}
+    return false;
+  }
+
+  /// Block a user
+  Future<bool> blockUser(int blockedUserId) async {
+    final token = _getAuthToken();
+    if (token == null) return false;
+
+    try {
+      final response = await _client.post(
+        Uri.parse(ApiEndpoints.blockUser),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+        },
+        body: json.encode({
+          'blocked_user_id': blockedUserId,
+        }),
+      );
+
+      if (response.statusCode == 201) {
+        final body = json.decode(response.body);
+        if (body['success'] == true) {
+          // Refresh feed locally to immediately hide blocked posts
           await fetchFeed(isRefresh: true);
           return true;
         }

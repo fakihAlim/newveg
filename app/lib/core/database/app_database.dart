@@ -289,6 +289,16 @@ class AppDatabase extends _$AppDatabase {
         .write(const FoodLogsCompanion(isSynced: Value(true)))
         .then((rows) => rows > 0);
   }
+
+  /// Clear all tables for account deletion/compliance
+  Future<void> clearDatabase() async {
+    await transaction(() async {
+      await delete(userProfiles).go();
+      await delete(foodLogs).go();
+      await delete(bookmarkedRecipes).go();
+      await delete(communityPosts).go();
+    });
+  }
 }
 
 LazyDatabase _openConnection() {

@@ -18,8 +18,33 @@ if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
 
 $db = getDatabaseConnection();
 
-// Ensure the community_likes table exists
+// Self-migration: Ensure reports and blocks tables exist
 try {
+    $db->exec("
+        CREATE TABLE IF NOT EXISTS `community_reports` (
+          `id` INT AUTO_INCREMENT PRIMARY KEY,
+          `post_id` INT NOT NULL,
+          `user_id` INT NOT NULL,
+          `reason` VARCHAR(255) NOT NULL,
+          `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          FOREIGN KEY (`post_id`) REFERENCES `community_posts`(`id`) ON DELETE CASCADE,
+          FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON DELETE CASCADE
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+    ");
+
+    $db->exec("
+        CREATE TABLE IF NOT EXISTS `blocked_users` (
+          `id` INT AUTO_INCREMENT PRIMARY KEY,
+          `user_id` INT NOT NULL,
+          `blocked_user_id` INT NOT NULL,
+          `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          UNIQUE KEY `unique_block` (`user_id`, `blocked_user_id`),
+          FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON DELETE CASCADE,
+          FOREIGN KEY (`blocked_user_id`) REFERENCES `users`(`id`) ON DELETE CASCADE
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+    ");
+    
+    // Ensure the community_likes table exists
     $db->exec("
         CREATE TABLE IF NOT EXISTS `community_likes` (
           `id` INT AUTO_INCREMENT PRIMARY KEY,
@@ -40,7 +65,7 @@ $limit = isset($_GET['limit']) ? max(1, intval($_GET['limit'])) : 20;
 $offset = ($page - 1) * $limit;
 
 try {
-    // Fetch posts with author and image url details
+    // Fetch posts with author and image url details (filtering out posts from blocked users)
     $stmt = $db->prepare("
         SELECT 
             p.id, 
@@ -53,10 +78,14 @@ try {
         FROM community_posts p
         JOIN users u ON p.user_id = u.id
         LEFT JOIN food_logs f ON p.food_log_id = f.id
+        WHERE p.user_id NOT IN (
+            SELECT blocked_user_id FROM blocked_users WHERE user_id = :requestUserId
+        )
         ORDER BY p.created_at DESC
         LIMIT :limit OFFSET :offset
     ");
     
+    $stmt->bindValue(':requestUserId', $requestUserId, PDO::PARAM_INT);
     $stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
     $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
     $stmt->execute();
@@ -88,6 +117,7 @@ try {
 
         $feedData[] = [
             'id' => $postId,
+            'authorId' => intval($post['user_id']),
             'authorName' => $post['author_name'] ?? 'Anonymous User',
             'authorAvatar' => $authorAvatar,
             'imageUrl' => $imageUrl,
