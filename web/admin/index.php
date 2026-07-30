@@ -43,53 +43,33 @@ try {
 <div class="row g-4 animated-fade">
     <!-- Stat 1: Total Users -->
     <div class="col-12 col-sm-6 col-xl-3">
-        <div class="glass-card p-4 d-flex align-items-center justify-content-between">
-            <div>
-                <span class="text-secondary fw-semibold d-block mb-1">Total Users</span>
-                <h3 class="fw-bold m-0 text-white"><?= number_format($countUsers) ?></h3>
-            </div>
-            <div class="stat-icon bg-teal-glow">
-                <i class="bi bi-people"></i>
-            </div>
+        <div class="glass-card p-4">
+            <span class="text-secondary fw-semibold d-block mb-1">Total Users</span>
+            <h3 class="fw-bold m-0 text-white"><?= number_format($countUsers) ?></h3>
         </div>
     </div>
     
     <!-- Stat 2: Total Recipes -->
     <div class="col-12 col-sm-6 col-xl-3">
-        <div class="glass-card p-4 d-flex align-items-center justify-content-between">
-            <div>
-                <span class="text-secondary fw-semibold d-block mb-1">Active Recipes</span>
-                <h3 class="fw-bold m-0 text-white"><?= number_format($countRecipes) ?></h3>
-            </div>
-            <div class="stat-icon bg-emerald-glow">
-                <i class="bi bi-book"></i>
-            </div>
+        <div class="glass-card p-4">
+            <span class="text-secondary fw-semibold d-block mb-1">Active Recipes</span>
+            <h3 class="fw-bold m-0 text-white"><?= number_format($countRecipes) ?></h3>
         </div>
     </div>
 
     <!-- Stat 3: Synced Logs -->
     <div class="col-12 col-sm-6 col-xl-3">
-        <div class="glass-card p-4 d-flex align-items-center justify-content-between">
-            <div>
-                <span class="text-secondary fw-semibold d-block mb-1">Food Scans / Logs</span>
-                <h3 class="fw-bold m-0 text-white"><?= number_format($countLogs) ?></h3>
-            </div>
-            <div class="stat-icon bg-purple-glow">
-                <i class="bi bi-egg-fried"></i>
-            </div>
+        <div class="glass-card p-4">
+            <span class="text-secondary fw-semibold d-block mb-1">Food Scans / Logs</span>
+            <h3 class="fw-bold m-0 text-white"><?= number_format($countLogs) ?></h3>
         </div>
     </div>
 
     <!-- Stat 4: Quizzes Available -->
     <div class="col-12 col-sm-6 col-xl-3">
-        <div class="glass-card p-4 d-flex align-items-center justify-content-between">
-            <div>
-                <span class="text-secondary fw-semibold d-block mb-1">Daily Quizzes</span>
-                <h3 class="fw-bold m-0 text-white"><?= number_format($countQuizzes) ?></h3>
-            </div>
-            <div class="stat-icon bg-orange-glow">
-                <i class="bi bi-patch-check"></i>
-            </div>
+        <div class="glass-card p-4">
+            <span class="text-secondary fw-semibold d-block mb-1">Daily Quizzes</span>
+            <h3 class="fw-bold m-0 text-white"><?= number_format($countQuizzes) ?></h3>
         </div>
     </div>
 </div>
@@ -99,7 +79,7 @@ try {
     <div class="col-12 col-xl-7">
         <div class="glass-card p-4 h-100">
             <div class="d-flex justify-content-between align-items-center mb-3">
-                <h5 class="m-0 fw-bold"><i class="bi bi-person-plus-fill text-teal me-2" style="color: #06b6d4;"></i>Recent Registrations</h5>
+                <h5 class="m-0 fw-bold">Recent Registrations</h5>
                 <a href="users.php" class="btn btn-sm btn-secondary-custom py-1.5 px-3">View All</a>
             </div>
             <div class="table-responsive">
@@ -125,7 +105,7 @@ try {
                                         <div class="text-secondary fs-12"><?= htmlspecialchars($user['email']) ?></div>
                                     </td>
                                     <td>
-                                        <span class="badge bg-opacity-10 text-teal p-2" style="background-color: rgba(6, 182, 212, 0.1); border: 1px solid rgba(6, 182, 212, 0.2);">
+                                        <span class="badge bg-teal-glow p-2">
                                             <?= htmlspecialchars($user['ttm_stage']) ?>
                                         </span>
                                     </td>
@@ -144,7 +124,7 @@ try {
     <div class="col-12 col-xl-5">
         <div class="glass-card p-4 h-100">
             <div class="d-flex justify-content-between align-items-center mb-3">
-                <h5 class="m-0 fw-bold"><i class="bi bi-egg-fried text-emerald me-2" style="color: #10b981;"></i>Recent Food Logs</h5>
+                <h5 class="m-0 fw-bold">Recent Food Logs</h5>
             </div>
             <div class="table-responsive">
                 <table class="table table-hover align-middle">
@@ -170,9 +150,9 @@ try {
                                     <td class="text-white"><?= number_format($log['calories'], 0) ?> kcal</td>
                                     <td>
                                         <?php if ($log['is_compliant'] == 1): ?>
-                                            <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1">Plant-Based</span>
+                                            <span class="badge bg-emerald-glow px-2 py-1">Plant-Based</span>
                                         <?php else: ?>
-                                            <span class="badge bg-danger-subtle text-danger border border-danger-subtle px-2 py-1">Non-Compliant</span>
+                                            <span class="badge bg-orange-glow px-2 py-1">Non-Compliant</span>
                                         <?php endif; ?>
                                     </td>
                                 </tr>
@@ -189,7 +169,7 @@ try {
     <!-- Server Performance Info -->
     <div class="col-12">
         <div class="glass-card p-4">
-            <h5 class="mb-3 fw-bold"><i class="bi bi-cpu text-purple me-2" style="color: #a855f7;"></i>Environment & Low-Memory VPS Status</h5>
+            <h5 class="mb-3 fw-bold">Environment & Low-Memory VPS Status</h5>
             <div class="row g-3">
                 <div class="col-12 col-md-3">
                     <span class="text-secondary d-block fs-12">PHP Version</span>

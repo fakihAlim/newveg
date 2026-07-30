@@ -14,7 +14,31 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 
 // Check if image file was uploaded
 if (!isset($_FILES['image']) || $_FILES['image']['error'] !== UPLOAD_ERR_OK) {
-    sendError('Image file is required and must upload successfully.');
+    $fileError = $_FILES['image']['error'] ?? UPLOAD_ERR_NO_FILE;
+    switch ($fileError) {
+        case UPLOAD_ERR_INI_SIZE:
+            $errorMsg = 'Image file exceeds the upload_max_filesize directive in php.ini.';
+            break;
+        case UPLOAD_ERR_FORM_SIZE:
+            $errorMsg = 'Image file exceeds the MAX_FILE_SIZE directive specified in the HTML form.';
+            break;
+        case UPLOAD_ERR_PARTIAL:
+            $errorMsg = 'Image file was only partially uploaded.';
+            break;
+        case UPLOAD_ERR_NO_FILE:
+            $errorMsg = 'No image file was uploaded.';
+            break;
+        case UPLOAD_ERR_NO_TMP_DIR:
+            $errorMsg = 'Missing a temporary folder on the server.';
+            break;
+        case UPLOAD_ERR_CANT_WRITE:
+            $errorMsg = 'Failed to write image file to disk.';
+            break;
+        default:
+            $errorMsg = 'Unknown upload error occurred (Code: ' . $fileError . ').';
+            break;
+    }
+    sendError($errorMsg);
 }
 
 $fileTmpPath = $_FILES['image']['tmp_name'];

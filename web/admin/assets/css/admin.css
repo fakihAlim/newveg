@@ -146,22 +146,28 @@ body {
     border: 1px solid rgba(16, 185, 129, 0.15);
 }
 
+.bg-emerald-glow {
+    background: #15803d;
+    color: #ffffff;
+    font-weight: bold;
+}
+
 .bg-teal-glow {
-    background: rgba(13, 148, 136, 0.08);
-    color: #0f766e;
-    border: 1px solid rgba(13, 148, 136, 0.15);
+    background: #0d9488;
+    color: #ffffff;
+    font-weight: bold;
 }
 
 .bg-purple-glow {
-    background: rgba(168, 85, 247, 0.08);
-    color: #7e22ce;
-    border: 1px solid rgba(168, 85, 247, 0.15);
+    background: #7e22ce;
+    color: #ffffff;
+    font-weight: bold;
 }
 
 .bg-orange-glow {
-    background: rgba(249, 115, 22, 0.08);
-    color: #c2410c;
-    border: 1px solid rgba(249, 115, 22, 0.15);
+    background: #ea580c;
+    color: #ffffff;
+    font-weight: bold;
 }
 
 .badge-glow {
@@ -173,9 +179,9 @@ body {
     background-color: #ffffff;
     border: 1px solid var(--border-color);
     color: var(--text-primary);
-    border-radius: 8px;
-    padding: 8px 12px;
-    font-size: 14px;
+    border-radius: 4px;
+    padding: 6px 10px;
+    font-size: 13px;
 }
 .form-control:focus, .form-select:focus {
     background-color: #ffffff;
@@ -187,18 +193,21 @@ body {
 .table {
     color: var(--text-primary);
     border-color: var(--border-color);
-    font-size: 14px;
+    font-size: 13px;
 }
 .table > :not(caption) > * > * {
     background-color: transparent;
-    padding: 10px 12px;
+    padding: 6px 8px;
     border-bottom-color: var(--border-color);
 }
 .table thead th {
-    font-weight: 600;
+    font-weight: 700;
     color: var(--text-secondary);
     border-bottom: 2px solid var(--border-color);
     background-color: #f8fafc;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 
 .btn-custom {
@@ -206,9 +215,9 @@ body {
     border: none;
     color: #fff;
     font-weight: 600;
-    border-radius: 8px;
-    padding: 8px 16px;
-    font-size: 14px;
+    border-radius: 4px;
+    padding: 6px 12px;
+    font-size: 13px;
     transition: all 0.3s;
 }
 .btn-custom:hover {
@@ -222,9 +231,9 @@ body {
     background: #ffffff;
     border: 1px solid var(--border-color);
     color: var(--text-primary);
-    border-radius: 8px;
-    padding: 8px 16px;
-    font-size: 14px;
+    border-radius: 4px;
+    padding: 6px 12px;
+    font-size: 13px;
 }
 .btn-secondary-custom:hover {
     background: #f1f5f9;
@@ -243,4 +252,22 @@ body {
 /* Override text-white for light theme readability */
 .text-white {
     color: var(--text-primary) !important;
+}
+
+/* Clean Action Links */
+.action-link {
+    font-size: 12px;
+    font-weight: 600;
+    text-decoration: none;
+    margin-right: 8px;
+    color: var(--accent-teal);
+}
+.action-link:hover {
+    text-decoration: underline;
+}
+.action-link-danger {
+    color: var(--error);
+}
+.action-link-danger:hover {
+    color: #b91c1c;
 }

@@ -6,7 +6,6 @@ import 'package:intl/intl.dart';
 
 import '../../../../core/database/app_database.dart';
 import '../../../../core/database/database_provider.dart';
-import '../../../../core/services/gemini_vision_service.dart';
 import 'package:newveg/features/food_log/data/food_analysis_service.dart';
 import 'food_log_state.dart';
 import 'package:newveg/features/core/sync/sync_service.dart';

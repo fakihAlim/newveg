@@ -32,7 +32,7 @@ class NewsDetailScreen extends StatelessWidget {
                 child: Image.network(
                   imageUrl,
                   fit: BoxFit.cover,
-                  errorBuilder: (_, __, ___) => Container(
+                  errorBuilder: (context, error, stackTrace) => Container(
                     color: AppColors.surfaceVariant,
                     child: const Icon(Icons.article, size: 64, color: AppColors.primary),
                   ),

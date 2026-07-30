@@ -109,14 +109,12 @@ try {
     
     <?php if (!empty($message)): ?>
         <div class="alert alert-success border-0 bg-success bg-opacity-10 text-success p-3 mb-4 rounded-3 d-flex align-items-center">
-            <i class="bi bi-check-circle-fill me-2 fs-5"></i>
             <div><?= htmlspecialchars($message) ?></div>
         </div>
     <?php endif; ?>
 
     <?php if (!empty($error)): ?>
         <div class="alert alert-danger border-0 bg-danger bg-opacity-10 text-danger p-3 mb-4 rounded-3 d-flex align-items-center">
-            <i class="bi bi-exclamation-triangle-fill me-2 fs-5"></i>
             <div><?= htmlspecialchars($error) ?></div>
         </div>
     <?php endif; ?>
@@ -125,7 +123,7 @@ try {
         <!-- Configuration Editor -->
         <div class="col-12 col-lg-8">
             <div class="glass-card p-4">
-                <h5 class="fw-bold mb-4"><i class="bi bi-sliders text-teal me-2" style="color: #0d9488;"></i>Active Settings</h5>
+                <h5 class="fw-bold mb-4">Active Settings</h5>
                 
                 <form method="POST">
                     <?php if (empty($settings)): ?>
@@ -140,12 +138,10 @@ try {
                                 
                                 <?php if ($setting['setting_key'] === 'GEMINI_API_KEY'): ?>
                                     <div class="input-group">
-                                        <span class="input-group-text bg-light border-light-subtle text-secondary"><i class="bi bi-key-fill"></i></span>
                                         <input type="text" class="form-control" name="settings[<?= htmlspecialchars($setting['setting_key']) ?>]" value="<?= htmlspecialchars($setting['setting_value']) ?>" placeholder="AI API Key...">
                                     </div>
                                 <?php elseif ($setting['setting_key'] === 'DAILY_FREE_SCAN_LIMIT'): ?>
                                     <div class="input-group" style="max-width: 250px;">
-                                        <span class="input-group-text bg-light border-light-subtle text-secondary"><i class="bi bi-hash"></i></span>
                                         <input type="number" class="form-control" name="settings[<?= htmlspecialchars($setting['setting_key']) ?>]" value="<?= intval($setting['setting_value']) ?>">
                                     </div>
                                 <?php else: ?>
@@ -155,7 +151,7 @@ try {
                         <?php endforeach; ?>
                         
                         <div class="mt-4 pt-3 border-top border-secondary border-opacity-10">
-                            <button type="submit" class="btn btn-custom px-4"><i class="bi bi-save me-2"></i>Save Configurations</button>
+                            <button type="submit" class="btn btn-custom px-4">[ Simpan Konfigurasi ]</button>
                         </div>
                     <?php endif; ?>
                 </form>
@@ -163,7 +159,7 @@ try {
 
             <!-- Gemini Key Rotation Pool Management -->
             <div class="glass-card p-4 mt-4">
-                <h5 class="fw-bold mb-4"><i class="bi bi-key-fill text-teal me-2" style="color: #0d9488;"></i>Gemini API Key Rotation Pool</h5>
+                <h5 class="fw-bold mb-4">Gemini API Key Rotation Pool</h5>
                 
                 <!-- Add Key Form -->
                 <form method="POST" class="row g-3 align-items-end mb-4 pb-4 border-bottom border-light-subtle">
@@ -177,7 +173,7 @@ try {
                         <input type="number" class="form-control" name="daily_limit" value="100" min="1" required>
                     </div>
                     <div class="col-12 col-md-3">
-                        <button type="submit" class="btn btn-custom w-100"><i class="bi bi-plus-circle me-2"></i>Add to Pool</button>
+                        <button type="submit" class="btn btn-custom w-100">[ Tambah ke Pool ]</button>
                     </div>
                 </form>
 
@@ -215,7 +211,7 @@ try {
                                                 <small class="text-secondary"><?= $percent ?>%</small>
                                             </div>
                                             <div class="progress" style="height: 6px; background-color: #e2e8f0;">
-                                                <div class="progress-bar <?= $barClass ?>" role="progressbar" style="width: <?= $percent ?>%" aria-valuenow="<?= $percent ?>" aria-valuemin="0" aria-valuemax="100"></div>
+                                                <div class="progress-bar <?= $barClass ?>" role="progressbar" style="width: <?= $percent ?>%"></div>
                                             </div>
                                         </td>
                                         <td>
@@ -223,14 +219,14 @@ try {
                                         </td>
                                         <td>
                                             <?php if ($key['is_active'] == 1): ?>
-                                                <a href="settings.php?action=toggle&id=<?= $key['id'] ?>&status=0" class="badge bg-emerald-glow px-2 py-1 text-decoration-none" style="font-size: 11px;">Active</a>
+                                                <a href="settings.php?action=toggle&id=<?= $key['id'] ?>&status=0" class="badge bg-emerald-glow text-decoration-none">Active</a>
                                             <?php else: ?>
-                                                <a href="settings.php?action=toggle&id=<?= $key['id'] ?>&status=1" class="badge bg-secondary bg-opacity-10 text-secondary px-2 py-1 text-decoration-none" style="font-size: 11px;">Inactive</a>
+                                                <a href="settings.php?action=toggle&id=<?= $key['id'] ?>&status=1" class="badge bg-orange-glow text-decoration-none">Inactive</a>
                                             <?php endif; ?>
                                         </td>
                                         <td>
-                                            <a href="settings.php?action=reset&id=<?= $key['id'] ?>" class="btn btn-sm btn-outline-secondary me-1" title="Reset Today Usage"><i class="bi bi-arrow-counterclockwise"></i></a>
-                                            <a href="settings.php?action=delete&id=<?= $key['id'] ?>" class="btn btn-sm btn-outline-danger" onclick="return confirm('Are you sure you want to remove this API key?')" title="Delete Key"><i class="bi bi-trash"></i></a>
+                                            <a href="settings.php?action=reset&id=<?= $key['id'] ?>" class="action-link" title="Reset Today Usage">[ Reset ]</a>
+                                            <a href="settings.php?action=delete&id=<?= $key['id'] ?>" class="action-link action-link-danger" onclick="return confirm('Are you sure you want to remove this API key?')" title="Delete Key">[ Hapus ]</a>
                                         </td>
                                     </tr>
                                 <?php endforeach; ?>
@@ -244,14 +240,14 @@ try {
         <!-- Details Help Box -->
         <div class="col-12 col-lg-4">
             <div class="glass-card p-4 mb-4">
-                <h5 class="fw-bold mb-3"><i class="bi bi-info-circle text-teal me-2" style="color: #0d9488;"></i>Integration Tips</h5>
+                <h5 class="fw-bold mb-3">Integration Tips</h5>
                 <p class="text-secondary fs-14">These variables are served dynamically to the Flutter client app through the public API path:</p>
                 <code class="d-block p-2 bg-light rounded border border-light-subtle text-teal mb-3" style="font-size: 13px; color: #0d9488;">GET /api/system/config.php</code>
                 <p class="text-secondary fs-14">Updating the <strong>Gemini API Key</strong> here changes the computer vision model behavior immediately in production without rebuilding or restarting Nginx/Apache.</p>
             </div>
 
             <div class="glass-card p-4">
-                <h5 class="fw-bold mb-3 text-warning"><i class="bi bi-shield-lock-fill me-2"></i>Security Guard</h5>
+                <h5 class="fw-bold mb-3 text-warning">Security Guard</h5>
                 <p class="text-secondary fs-14">Never commit production API keys to Git. Keep them securely inside this dynamic database configuration panel or use environment overrides.</p>
             </div>
         </div>

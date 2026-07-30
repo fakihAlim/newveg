@@ -7,8 +7,9 @@ import '../../../../core/database/database_provider.dart';
 import '../../../../core/database/app_database.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../food_log/presentation/providers/food_log_provider.dart';
-import '../../../food_log/presentation/screens/add_food_log_screen.dart';
 import '../../../discover/presentation/screens/discover_screen.dart';
+import '../../../profile/presentation/screens/settings_screen.dart';
+import '../../../community/presentation/providers/community_provider.dart';
 
 /// Active date state provider for horizontal calendar filtering
 final selectedDateProvider = StateProvider<DateTime>((ref) => DateTime.now());
@@ -43,14 +44,6 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     return _inspirationQuotes[day % _inspirationQuotes.length];
   }
 
-  Future<void> _navigateToAddFoodLog() async {
-    final result = await Navigator.of(context).push<bool>(
-      MaterialPageRoute(builder: (_) => const AddFoodLogScreen()),
-    );
-    if (result == true) {
-      ref.invalidate(todayFoodLogsProvider);
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -113,8 +106,10 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                         IconButton(
                           icon: const Icon(Icons.settings_outlined, color: AppColors.textPrimary),
                           onPressed: () {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('Pengaturan segera hadir!')),
+                            Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (context) => const SettingsScreen(),
+                              ),
                             );
                           },
                         ),
@@ -577,11 +572,88 @@ class _InspirationQuoteCard extends StatelessWidget {
 // ---------------------------------------------------------------------------
 // Food Log List Item Widget
 // ---------------------------------------------------------------------------
-class _FoodLogListItem extends StatelessWidget {
+class _FoodLogListItem extends ConsumerWidget {
   final FoodLog log;
   const _FoodLogListItem({required this.log});
 
-  void _showLogDetail(BuildContext context) {
+  void _showShareDialog(BuildContext context, WidgetRef ref, int foodLogId) {
+    final textController = TextEditingController();
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          title: const Text('Bagikan ke Komunitas 🌿'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'Tulis caption menarik untuk postingan makan sehat Anda:',
+                style: TextStyle(fontSize: 12, color: AppColors.textSecondary),
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: textController,
+                maxLines: 3,
+                decoration: const InputDecoration(
+                  hintText: 'Makan siang sehat hari ini... 🥑',
+                  border: OutlineInputBorder(),
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Batal'),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                final caption = textController.text.trim();
+                Navigator.pop(context); // Close share dialog
+                
+                // Show loading
+                showDialog(
+                  context: context,
+                  barrierDismissible: false,
+                  builder: (context) => const Center(
+                    child: CircularProgressIndicator(color: AppColors.primary),
+                  ),
+                );
+
+                final success = await ref
+                    .read(communityFeedProvider.notifier)
+                    .shareFoodLog(foodLogId, caption);
+
+                if (context.mounted) {
+                  Navigator.pop(context); // Close loading indicator
+                  if (success) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Berhasil dibagikan ke Feed Komunitas!'),
+                        backgroundColor: AppColors.primary,
+                      ),
+                    );
+                  } else {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Gagal membagikan postingan.'),
+                        backgroundColor: AppColors.error,
+                      ),
+                    );
+                  }
+                }
+              },
+              child: const Text('Kirim'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _showLogDetail(BuildContext context, WidgetRef ref) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -617,7 +689,7 @@ class _FoodLogListItem extends StatelessWidget {
                         width: double.infinity,
                         height: 220,
                         fit: BoxFit.cover,
-                        errorBuilder: (_, __, ___) => _buildImagePlaceholder(),
+                        errorBuilder: (context, error, stackTrace) => _buildImagePlaceholder(),
                       )
                     : _buildImagePlaceholder(),
               ),
@@ -691,14 +763,33 @@ class _FoodLogListItem extends StatelessWidget {
               ),
               const SizedBox(height: 24),
               
-              // Back Button
-              SizedBox(
-                width: double.infinity,
-                height: 50,
-                child: ElevatedButton(
-                  onPressed: () => Navigator.pop(context),
-                  child: const Text('Tutup'),
-                ),
+              // Actions
+              Row(
+                children: [
+                  Expanded(
+                    child: SizedBox(
+                      height: 50,
+                      child: OutlinedButton(
+                        onPressed: () => Navigator.pop(context),
+                        child: const Text('Tutup'),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: SizedBox(
+                      height: 50,
+                      child: ElevatedButton.icon(
+                        icon: const Icon(Icons.share_rounded, size: 18),
+                        onPressed: () {
+                          Navigator.pop(context); // Close bottom sheet
+                          _showShareDialog(context, ref, log.id);
+                        },
+                        label: const Text('Bagikan'),
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
@@ -717,7 +808,7 @@ class _FoodLogListItem extends StatelessWidget {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final isCompliant = log.isPlantBased;
 
     return Card(
@@ -729,7 +820,7 @@ class _FoodLogListItem extends StatelessWidget {
       ),
       child: InkWell(
         borderRadius: BorderRadius.circular(16),
-        onTap: () => _showLogDetail(context),
+        onTap: () => _showLogDetail(context, ref),
         child: Padding(
           padding: const EdgeInsets.all(12),
           child: Row(

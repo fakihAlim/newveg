@@ -21,4 +21,5 @@ class ApiEndpoints {
   static const String communityFeed = '$baseUrl/community/feed.php';
   static const String likePost = '$baseUrl/community/like.php';
   static const String commentPost = '$baseUrl/community/comment.php';
+  static const String shareLog = '$baseUrl/community/share_log.php';
 }

@@ -15,8 +15,6 @@ $currentPage = basename($_SERVER['PHP_SELF']);
     <title><?= $pageTitle ?? 'NewVeg Admin CMS' ?></title>
     <!-- Bootstrap 5 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Bootstrap Icons -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
     <!-- Custom Dark Premium Styles -->
     <link href="assets/css/admin.css" rel="stylesheet">
 </head>
@@ -26,34 +24,36 @@ $currentPage = basename($_SERVER['PHP_SELF']);
     <!-- Sidebar -->
     <nav id="sidebar">
         <div class="sidebar-header d-flex align-items-center">
-            <i class="bi bi-egg-fried fs-3 text-teal me-2" style="color: #06b6d4;"></i>
             <h4 class="m-0 gradient-text">NewVeg CMS</h4>
         </div>
 
         <ul class="list-unstyled components">
             <li class="<?= $currentPage === 'index.php' ? 'active' : '' ?>">
-                <a href="index.php"><i class="bi bi-speedometer2"></i> Dashboard</a>
+                <a href="index.php">Dashboard</a>
             </li>
             <li class="<?= $currentPage === 'recipes.php' ? 'active' : '' ?>">
-                <a href="recipes.php"><i class="bi bi-book"></i> Recipes</a>
+                <a href="recipes.php">Recipes</a>
             </li>
             <li class="<?= $currentPage === 'news.php' ? 'active' : '' ?>">
-                <a href="news.php"><i class="bi bi-journal-text"></i> News & Articles</a>
+                <a href="news.php">News & Articles</a>
             </li>
             <li class="<?= $currentPage === 'myths.php' ? 'active' : '' ?>">
-                <a href="myths.php"><i class="bi bi-patch-question"></i> Myths & Facts</a>
+                <a href="myths.php">Myths & Facts</a>
             </li>
             <li class="<?= $currentPage === 'quizzes.php' ? 'active' : '' ?>">
-                <a href="quizzes.php"><i class="bi bi-patch-check"></i> Daily Quizzes</a>
+                <a href="quizzes.php">Daily Quizzes</a>
             </li>
             <li class="<?= $currentPage === 'users.php' ? 'active' : '' ?>">
-                <a href="users.php"><i class="bi bi-people"></i> Users & TTM</a>
+                <a href="users.php">Users & TTM</a>
+            </li>
+            <li class="<?= $currentPage === 'community.php' ? 'active' : '' ?>">
+                <a href="community.php">Community Feed</a>
             </li>
             <li class="<?= $currentPage === 'settings.php' ? 'active' : '' ?>">
-                <a href="settings.php"><i class="bi bi-gear"></i> System Config</a>
+                <a href="settings.php">System Config</a>
             </li>
             <li class="mt-4">
-                <a href="logout.php" class="text-danger"><i class="bi bi-box-arrow-left text-danger"></i> Sign Out</a>
+                <a href="logout.php" class="text-danger">Sign Out</a>
             </li>
         </ul>
     </nav>
@@ -71,8 +71,8 @@ $currentPage = basename($_SERVER['PHP_SELF']);
                     <span class="d-block fw-semibold"><?= htmlspecialchars($_SESSION['admin_name'] ?? 'Admin') ?></span>
                     <span class="badge bg-teal-glow badge-glow" style="font-size: 10px;">SUPER ADMIN</span>
                 </div>
-                <div class="rounded-circle bg-teal-glow d-flex align-items-center justify-content-center" style="width: 42px; height: 42px;">
-                    <i class="bi bi-person-fill fs-4"></i>
+                <div class="rounded bg-teal-glow d-flex align-items-center justify-content-center fw-bold text-white" style="width: 42px; height: 42px; font-size: 14px;">
+                    AV
                 </div>
             </div>
         </div>

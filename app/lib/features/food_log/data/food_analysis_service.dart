@@ -7,10 +7,8 @@ import 'package:newveg/core/services/gemini_vision_service.dart';
 class FoodAnalysisService {
   final String _uploadUrl = 'https://yodi.my.id/veg/web/api/food/analyze.php';
 
-  /**
-   * Resizes and crops the source image to exactly 600x600 pixels (JPEG 80% quality)
-   * to guarantee fast upload size (<100 KB).
-   */
+  /// Resizes and crops the source image to exactly 600x600 pixels (JPEG 80% quality)
+  /// to guarantee fast upload size (<100 KB).
   Future<File> compressImage(File sourceFile) async {
     final bytes = await sourceFile.readAsBytes();
     final decoded = img.decodeImage(bytes);
@@ -38,9 +36,7 @@ class FoodAnalysisService {
     return compressedFile;
   }
 
-  /**
-   * Uploads compressed food photo to the remote PHP AI endpoint and parses nutritional details
-   */
+  /// Uploads compressed food photo to the remote PHP AI endpoint and parses nutritional details
   Future<FoodAnalysisResult> uploadAndAnalyze({
     required File imageFile,
     required String? authToken,

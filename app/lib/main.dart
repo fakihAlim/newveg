@@ -4,18 +4,18 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:newveg/core/database/database_provider.dart';
 import 'package:newveg/core/database/app_database.dart';
 import 'package:newveg/core/theme/app_theme.dart';
-import 'package:newveg/features/onboarding/presentation/screens/profile_input_screen.dart';
-import 'package:newveg/features/dashboard/presentation/screens/navigation_wrapper.dart';
-
 import 'package:newveg/features/core/sync/sync_service.dart';
-
 import 'package:newveg/features/auth/presentation/screens/auth_gate.dart';
+import 'package:newveg/core/services/notification_service.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   // Load environment variables from .env file
   await dotenv.load(fileName: '.env');
+
+  // Initialize notifications service
+  await NotificationService().init();
 
   runApp(const ProviderScope(child: NewVegApp()));
 }

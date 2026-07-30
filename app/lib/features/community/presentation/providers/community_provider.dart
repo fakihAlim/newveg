@@ -266,6 +266,36 @@ class CommunityFeedNotifier extends StateNotifier<CommunityFeedState> {
     } catch (_) {}
     return null;
   }
+
+  /// Share a food log to the community feed
+  Future<bool> shareFoodLog(int foodLogId, String caption) async {
+    final token = _getAuthToken();
+    if (token == null) return false;
+
+    try {
+      final response = await _client.post(
+        Uri.parse(ApiEndpoints.shareLog),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+        },
+        body: json.encode({
+          'food_log_id': foodLogId,
+          'caption': caption,
+        }),
+      );
+
+      if (response.statusCode == 201) {
+        final body = json.decode(response.body);
+        if (body['success'] == true) {
+          // Refresh the community feed so the new post appears instantly
+          await fetchFeed(isRefresh: true);
+          return true;
+        }
+      }
+    } catch (_) {}
+    return false;
+  }
 }
 
 final communityFeedProvider = StateNotifierProvider<CommunityFeedNotifier, CommunityFeedState>((ref) {
