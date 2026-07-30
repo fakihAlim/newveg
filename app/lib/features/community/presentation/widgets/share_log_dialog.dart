@@ -35,6 +35,7 @@ class _ShareLogDialogState extends ConsumerState<ShareLogDialog> {
 
       if (mounted) {
         if (success) {
+          ref.invalidate(communityFeedProvider);
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
               content: Text('Berhasil dibagikan ke Feed Komunitas!'),

@@ -49,6 +49,22 @@ class BadgesScreen extends ConsumerWidget {
             loading: () => const Center(child: CircularProgressIndicator(color: AppColors.primary)),
             error: (err, _) => Center(child: Text('Error: $err')),
             data: (plantLogsCount) {
+              if (badgeList.isEmpty) {
+                return Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Icon(Icons.emoji_events_outlined, size: 64, color: AppColors.textHint),
+                      const SizedBox(height: 16),
+                      Text(
+                        'Belum ada lencana tersedia',
+                        style: Theme.of(context).textTheme.titleMedium?.copyWith(color: AppColors.textSecondary),
+                      ),
+                    ],
+                  ),
+                );
+              }
+
               return GridView.builder(
                 padding: const EdgeInsets.all(20),
                 gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(

@@ -28,25 +28,47 @@ $caption = isset($input['caption']) ? trim($input['caption']) : '';
 
 $db = getDatabaseConnection();
 
+// Self-migration: Ensure image_url column exists in community_posts
+try {
+    $db->exec("ALTER TABLE `community_posts` ADD COLUMN `image_url` VARCHAR(255) DEFAULT NULL");
+} catch (PDOException $e) {
+    // Silent fail if column already exists
+}
+
 try {
     // 1. Verify the food log exists and belongs to the authenticated user
-    $verifyStmt = $db->prepare("SELECT id FROM food_logs WHERE id = ? AND user_id = ?");
+    $verifyStmt = $db->prepare("SELECT id, image_url FROM food_logs WHERE id = ? AND user_id = ?");
     $verifyStmt->execute([$foodLogId, $userId]);
-    if (!$verifyStmt->fetch()) {
+    $log = $verifyStmt->fetch();
+    if (!$log) {
         sendError('Food log not found or access denied.', 404);
     }
 
-    // 2. Insert new post into community_posts
+    $rawImage = $log['image_url'] ?? '';
+    // Normalize relative vs full URL
+    $imageUrl = '';
+    if (!empty($rawImage)) {
+        if (str_starts_with($rawImage, 'http')) {
+            $imageUrl = $rawImage;
+        } else {
+            // Ensure path does not double-prefix 'uploads/'
+            $cleanPath = ltrim(str_replace('uploads/', '', $rawImage), '/');
+            $imageUrl = 'uploads/' . $cleanPath;
+        }
+    }
+
+    // 2. Insert new post into community_posts including image_url
     $insertStmt = $db->prepare("
-        INSERT INTO community_posts (user_id, food_log_id, caption, likes_count)
-        VALUES (?, ?, ?, 0)
+        INSERT INTO community_posts (user_id, food_log_id, image_url, caption, likes_count)
+        VALUES (?, ?, ?, ?, 0)
     ");
-    $insertStmt->execute([$userId, $foodLogId, $caption]);
+    $insertStmt->execute([$userId, $foodLogId, $imageUrl, $caption]);
     $newPostId = $db->lastInsertId();
 
-    sendSuccess('Food log shared to community successfully.', [
+    sendSuccess('Shared successfully', [
+        'status' => 'success',
         'post_id' => intval($newPostId)
-    ], 201);
+    ], 200);
 
 } catch (PDOException $e) {
     sendError('Database error: ' . $e->getMessage(), 500);
